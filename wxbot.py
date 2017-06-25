@@ -66,7 +66,7 @@ def get_bot_info():
 
 @app.route('/bot/qr/status')
 def get_qr_status():
-    bot = anonymous_bots.get(get_session_id())
+    bot = anonymous_bots[get_session_id()]
     status = bot.check_login()
     message = ""
     name = ""

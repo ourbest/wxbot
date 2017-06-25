@@ -5,3 +5,5 @@ lxml
 sqlalchemy
 Flask-SQLAlchemy
 requests
+gunicorn
+gevent

@@ -5,6 +5,10 @@
 
 # User-specific stuff:
 .idea
+.idea/*
+
+.DS_Store
+__pycache__
 
 ## File-based project format:
 *.iws
