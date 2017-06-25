@@ -27,7 +27,7 @@ def index():
 
 @app.route('/dist/<file>')
 def dist(file):
-    return send_file('static/dist/' + file)
+    return send_file('static/dist/' + file, cache_timeout=24 * 30 * 3600)
 
 
 @app.route('/bot/bots')
