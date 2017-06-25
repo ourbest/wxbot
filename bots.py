@@ -2,6 +2,8 @@ import io
 import tempfile
 
 import atexit
+from datetime import datetime
+
 import itchat
 from itchat.components.login import push_login
 from pyqrcode import QRCode
@@ -19,7 +21,8 @@ def bot_func(message):
         bot = message.bot
         session = db_session()
         msg = BotMessage(bot_name=bot.self.name, sender=message.member.name if message.member else message.sender.name,
-                         chat=message.chat.name, type=message.type, message=message.text, url=message.url)
+                         chat=message.chat.name, type=message.type, message=message.text,
+                         url=message.url, created_at=datetime.now())
         session.add(msg)
         session.commit()
         print(message)

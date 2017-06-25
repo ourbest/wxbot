@@ -33,7 +33,7 @@ class BotArticle(Base):
     sender = Column(String(80))
     title = Column(String(255))
     key = Column(String(255))
-    created_at = Column(DateTime, default=datetime.now(), server_default=func.now())
+    created_at = Column(DateTime)
 
 
 class BotMessage(Base):
@@ -45,7 +45,7 @@ class BotMessage(Base):
     type = Column(String(20))
     message = Column(String(255))
     url = Column(String(255))
-    created_at = Column(DateTime, default=datetime.now(), server_default=func.now())
+    created_at = Column(DateTime)
 
 
 Base.metadata.create_all(engine)
