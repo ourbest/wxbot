@@ -5,8 +5,8 @@ WORKDIR /code/
 
 ADD requirements.txt .
 
-RUN pip install -r requirements.txt
+RUN pip install -r requirements.txt -i https://pypi.douban.com/simple/
 
-ADD * .
+ADD . /code/
 
-ENTRYPOINT ['python', 'wxbot.py', 'prod']
+ENTRYPOINT ["python", "wxbot.py", "prod"]

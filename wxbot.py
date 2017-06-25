@@ -182,7 +182,7 @@ def articles():
 
 
 if __name__ == '__main__':
-    if sys.argv and sys.argv[0] == 'prod':
+    if len(sys.argv) > 1 and sys.argv[1] == 'prod':
         app.run(host="0.0.0.0")
     else:
         app.run(debug=True)
