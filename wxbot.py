@@ -22,7 +22,7 @@ app.secret_key = 'A0Zr98jdai12oqwjo/3yX R~XHH!jmN]LWX/,?RT'
 
 @app.route('/')
 def index():
-    return render_template("index.html", version='e5d8236bbffa72544c41')
+    return render_template("index.html", version='698e2cce5baf23755ac5')
 
 
 @app.route('/dist/<file>')
