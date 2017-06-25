@@ -22,7 +22,7 @@ app.secret_key = 'A0Zr98jdai12oqwjo/3yX R~XHH!jmN]LWX/,?RT'
 
 @app.route('/')
 def index():
-    return render_template("index.html", version='fef0fc9338e269e09100')
+    return render_template("index.html", version='a499ec48e439c340d510')
 
 
 @app.route('/dist/<file>')
@@ -180,6 +180,10 @@ def articles():
         'created_at': x.created_at.strftime('%Y-%m-%d %H:%M:%S')
     } for x in msgs])
 
+
+from raven.contrib.flask import Sentry
+
+sentry = Sentry(app, dsn='https://c6eb05490aeb4f0088e45320b06160aa:74d3695c209944eb975a9e2d6dff2b04@sentry.io/183612')
 
 if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] == 'prod':

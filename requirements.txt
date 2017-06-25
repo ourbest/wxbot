@@ -7,3 +7,5 @@ Flask-SQLAlchemy
 requests
 gunicorn
 gevent
+raven[flask]
+blinker
