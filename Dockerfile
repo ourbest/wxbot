@@ -7,6 +7,6 @@ ADD requirements.txt .
 
 RUN pip install -r requirements.txt
 
-ADD .
+ADD * .
 
 ENTRYPOINT ['python', 'wxbot.py', 'prod']
