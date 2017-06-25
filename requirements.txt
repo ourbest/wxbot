@@ -1,0 +1,7 @@
+wxpy
+qiniu
+beautifulsoup4
+lxml
+sqlalchemy
+Flask-SQLAlchemy
+requests

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <style>
+        #js_content {
+            font-size: 16px;
+            word-wrap: break-word;
+            -webkit-hyphens: auto;
+            -ms-hyphens: auto;
+            hyphens: auto;
+            width: 740px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        #js_content table {
+            margin-bottom: 10px;
+            border-collapse: collapse;
+            display: table;
+            width: 100% !important;
+        }
+
+        #js_content * {
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+            -webkit-box-sizing: border-box !important;
+            word-wrap: break-word !important;
+        }
+
+        h1.title {
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+<h1 class="title">{{ title }}</h1>
+{% autoescape false %}
+{{ content }}
+{% endautoescape %}
+</body>
+</html>
