@@ -1,28 +1,22 @@
+import sys
 import uuid
-from collections import defaultdict
-
-import requests
 import zlib
 
-import sys
+import requests
 from flask import Flask, session, render_template, jsonify, send_file, request
 
-import uploader
-from bots import AsyncBot
+import bots
+import settings
 from models import db_session, BotArticle, BotMessage
 
 app = Flask(__name__)
 
-bots = dict()
-
-anonymous_bots = defaultdict(AsyncBot)
-
-app.secret_key = 'A0Zr98jdai12oqwjo/3yX R~XHH!jmN]LWX/,?RT'
+app.secret_key = settings.SECRET_KEY
 
 
 @app.route('/')
 def index():
-    return render_template("index.html", version='a499ec48e439c340d510')
+    return render_template("index.html", version=settings.JS_VERSION)
 
 
 @app.route('/dist/<file>')
@@ -32,12 +26,12 @@ def dist(file):
 
 @app.route('/bot/bots')
 def get_bots():
-    return jsonify(bots=list(bots.keys()))
+    return jsonify(bots=list(bots.running_bots.keys()), master=bots.master_bot.self.name if bots.master_bot else '')
 
 
 @app.route('/bot/qr')
 def get_qr():
-    bot = anonymous_bots[get_session_id()]
+    bot = bots.anonymous_bots[get_session_id()]
 
     qr = bot.get_qr()
     qr.seek(0)
@@ -47,18 +41,20 @@ def get_qr():
 @app.route('/bot/logout')
 def logout():
     name = request.values.get('name')
-    bot = bots.get(name)
+    if bots.master_bot.name == name:
+        return jsonify(code=2, message='不可以注销管理机器人')
+    bot = bots.running_bots.get(name)
     if not bot:
         return jsonify(code=1, message="没有这个机器人")
     bot.logout()
-    del bots[name]
+
     return jsonify(code=0)
 
 
 @app.route('/bot/info')
 def get_bot_info():
     name = request.values.get('name')
-    bot = bots.get(name)
+    bot = bots.running_bots.get(name)
     if not bot:
         return jsonify(code=1, message="没有这个机器人")
     return jsonify(code=0, friends=bot.friends().stats_text(), mps=bot.mps().stats_text())
@@ -66,23 +62,21 @@ def get_bot_info():
 
 @app.route('/bot/qr/status')
 def get_qr_status():
-    bot = anonymous_bots[get_session_id()]
+    bot = bots.anonymous_bots[get_session_id()]
     status = bot.check_login()
-    message = ""
+    message = "请扫描二维码"
     name = ""
     if status == '200':
         message = '登录成功'
-        bot.post_login()
-        if bot.self.name in bots:
-            bots[bot.self.name].logout()
 
-        del anonymous_bots[get_session_id()]
-        bots[bot.self.name] = bot
+        bot.post_login()
+
+        del bots.anonymous_bots[get_session_id()]
         name = bot.self.name
     elif status == '201':
         message = '客户端确认'
     elif status == '408':
-        message = 'QR过期'
+        message = '二维码已过期，请重新扫描'
 
     return jsonify(code=status, message=message, name=name)
 
@@ -106,7 +100,7 @@ def web_page():
     if uid:
         article = BotArticle.query.filter_by(uid=uid).first()
         if article:
-            resp = requests.get(uploader.qiniu_root + article.key + ".gz")
+            resp = requests.get(settings.QINIU_ROOT + article.key + ".gz")
             if resp.ok:
                 content = zlib.decompress(resp.content).decode('utf-8')
                 return render_template('article.html', title=article.title,
@@ -118,7 +112,7 @@ def web_page():
 @app.route('/bot/friends')
 def friends():
     name = request.values.get('name')
-    bot = bots.get(name)
+    bot = bots.running_bots.get(name)
     if not bot:
         return jsonify(code=1, message="没有这个机器人")
     return jsonify(code=0, friends=[{'name': x.name,
@@ -132,7 +126,7 @@ def friends():
 @app.route('/bot/mps')
 def mps():
     name = request.values.get('name')
-    bot = bots.get(name)
+    bot = bots.running_bots.get(name)
     if not bot:
         return jsonify(code=1, message="没有这个机器人")
     return jsonify(code=0, mps=[{'name': x.name,
@@ -146,7 +140,7 @@ def mps():
 @app.route('/bot/groups')
 def groups():
     name = request.values.get('name')
-    bot = bots.get(name)
+    bot = bots.running_bots.get(name)
     if not bot:
         return jsonify(code=1, message="没有这个机器人")
     return jsonify(code=0, groups=[{'name': x.name,
@@ -181,9 +175,31 @@ def articles():
     } for x in msgs])
 
 
+@app.route('/bot/master/assign')
+def set_master():
+    name = request.values.get('name')
+    bot = bots.running_bots.pop(name)
+
+    if not bot:
+        return jsonify(code=1, message="没有这个机器人")
+
+    if bots.master_bot:
+        bots.master_bot.self_msg('确认切换监控账号为【%s】吗？\n请回复【确认替换】' % name)
+        bots.master_bot.to_confirm_replace = bot
+        return jsonify(code=2, message='已发送确认信息')
+
+    bots.set_master_bot(bot)
+    return jsonify(code=0, message='设置成功')
+
+
+@app.route('/bot/master')
+def get_master():
+    return jsonify(code=0 if bots.master_bot else 1, name=bots.master_bot.name if bots.master_bot else '')
+
+
 from raven.contrib.flask import Sentry
 
-sentry = Sentry(app, dsn='https://c6eb05490aeb4f0088e45320b06160aa:74d3695c209944eb975a9e2d6dff2b04@sentry.io/183612')
+sentry = Sentry(app, dsn=settings.SENTRY_DSN)
 
 if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] == 'prod':
