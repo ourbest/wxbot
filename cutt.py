@@ -22,7 +22,10 @@ def upload_image(url):
 
     # resp = session.post(CUTT_HOST + '/image/uploadImgUrl.json', {'url': url}).json()
     resp = session.post(CUTT_HOST + '/image/getImage.json', {'url': url}).json()
-    return ('http://qn.cutt.com/' + resp.get('data') + '/2') if resp.get('code') == 0 else url
+    # if not resp.get('data'):
+    #     raw = requests.get(url).content
+    #     resp = session.post(CUTT_HOST)
+    return ('http://qn.cutt.com/%s/2' % resp.get('data')) if resp.get('code') == 0 and resp.get('data') else url
 
 
 def post_article(app_id, title, content):
