@@ -203,7 +203,7 @@ def messages():
         'type': x.type,
         'message': x.text,
         'created_at': x.create_time.strftime('%Y-%m-%d %H:%M:%S')
-    } for x in bot.messages])
+    } for x in bot.messages][::-1])
 
 
 @app.route('/bot/articles')
