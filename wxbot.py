@@ -220,13 +220,15 @@ def articles():
 
     msgs = BotArticle.query.filter(BotArticle.bot_name == name, BotArticle.status >= 0) \
         .order_by(BotArticle.created_at.desc()).offset(100 * page).limit(100).all()
-    return jsonify(code=0, articles=[{
-        'sender': x.sender,
-        'title': x.title,
-        'cover': x.cover,
-        'id': x.uid,
-        'created_at': x.created_at.strftime('%Y-%m-%d %H:%M:%S')
-    } for x in msgs])
+    return jsonify(code=0,
+                   total=BotArticle.query.filter(BotArticle.bot_name == name, BotArticle.status >= 0).count(),
+                   articles=[{
+                       'sender': x.sender,
+                       'title': x.title,
+                       'cover': x.cover,
+                       'id': x.uid,
+                       'created_at': x.created_at.strftime('%Y-%m-%d %H:%M:%S')
+                   } for x in msgs])
 
 
 @app.route('/bot/master/assign')
