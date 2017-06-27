@@ -35,6 +35,7 @@ class BotArticle(Base):
     key = Column(String(255))
     cover = Column(String(255))
     created_at = Column(DateTime)
+    status = Column(Integer)
 
 
 class BotMessage(Base):

@@ -106,7 +106,20 @@ def send_to_cutt():
                 content = zlib.decompress(resp.content).decode('utf-8')
 
                 cutt.post_draft(article.title, content, article.cover)
+                article.status = 1
+                db_session().commit()
 
+    return jsonify(code=0)
+
+
+@app.route('/bot/article/remove', methods=['POST'])
+def remove_article():
+    uid = request.values.get('id')
+    article = BotArticle.query.filter_by(uid=uid).first()
+    if article:
+        session = db_session()
+        article.status = -1
+        session.commit()
     return jsonify(code=0)
 
 
@@ -196,11 +209,21 @@ def messages():
 @app.route('/bot/articles')
 def articles():
     name = request.values.get('name')
-    msgs = BotArticle.query.filter(BotArticle.bot_name == name) \
-        .order_by(BotArticle.created_at.desc()).limit(200).all()
+    page = request.values.get('page')
+    try:
+        if not page:
+            page = 0
+        else:
+            page = int(page)
+    except:
+        page = 0
+
+    msgs = BotArticle.query.filter(BotArticle.bot_name == name, BotArticle.status >= 0) \
+        .order_by(BotArticle.created_at.desc()).offset(100 * page).limit(100).all()
     return jsonify(code=0, articles=[{
         'sender': x.sender,
         'title': x.title,
+        'cover': x.cover,
         'id': x.uid,
         'created_at': x.created_at.strftime('%Y-%m-%d %H:%M:%S')
     } for x in msgs])
