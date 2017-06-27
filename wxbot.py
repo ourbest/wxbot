@@ -44,7 +44,7 @@ def get_qr():
 @app.route('/bot/logout')
 def logout():
     name = request.values.get('name')
-    if bots.master_bot.name == name:
+    if bots.master_bot and bots.master_bot.name == name:
         return jsonify(code=2, message='不可以注销管理机器人')
     bot = bots.running_bots.get(name)
     if not bot:
