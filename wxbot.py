@@ -1,3 +1,4 @@
+import os
 import sys
 import uuid
 import zlib
@@ -6,8 +7,10 @@ import requests
 from flask import Flask, session, render_template, jsonify, send_file, request
 
 import bots
+import cutt
 import settings
-from models import db_session, BotArticle, BotMessage
+import uploader
+from models import db_session, BotArticle
 
 app = Flask(__name__)
 
@@ -57,7 +60,14 @@ def get_bot_info():
     bot = bots.running_bots.get(name)
     if not bot:
         return jsonify(code=1, message="没有这个机器人")
-    return jsonify(code=0, friends=bot.friends().stats_text(), mps=bot.mps().stats_text())
+    return jsonify(code=0,
+                   config={
+                       'auto_accept': bot.auto_accept,
+                       'crawler_articles': bot.crawler_articles,
+                       'app_id': bot.app_id
+                   },
+                   friends=bot.friends().stats_text(),
+                   mps=bot.mps().stats_text())
 
 
 @app.route('/bot/qr/status')
@@ -79,6 +89,25 @@ def get_qr_status():
         message = '二维码已过期，请重新扫描'
 
     return jsonify(code=status, message=message, name=name)
+
+
+@app.route('/bot/send/cutt', methods=['POST'])
+def send_to_cutt():
+    name = request.values.get('name')
+    bot = bots.running_bots.get(name)
+    app_id = '324160' if not bot else bot.app_id
+
+    uid = request.values.get('id')
+    if uid:
+        article = BotArticle.query.filter_by(uid=uid).first()
+        if article:
+            resp = requests.get(settings.QINIU_ROOT + article.key + ".gz")
+            if resp.ok:
+                content = zlib.decompress(resp.content).decode('utf-8')
+
+                cutt.post_draft(article.title, content, article.cover)
+
+    return jsonify(code=0)
 
 
 def get_session_id():
@@ -151,15 +180,17 @@ def groups():
 @app.route('/bot/messages')
 def messages():
     name = request.values.get('name')
-    msgs = BotMessage.query.filter(BotMessage.bot_name == name) \
-        .order_by(BotMessage.created_at.desc()).limit(200).all()
+    bot = bots.running_bots.get(name)
+    if not bot:
+        return jsonify(code=1, message="没有这个机器人")
+
     return jsonify(code=0, messages=[{
-        'sender': x.sender,
-        'chat': x.chat,
+        'sender': x.sender.name,
+        'chat': x.chat.name,
         'type': x.type,
-        'message': x.message,
-        'created_at': x.created_at.strftime('%Y-%m-%d %H:%M:%S')
-    } for x in msgs])
+        'message': x.text,
+        'created_at': x.create_time.strftime('%Y-%m-%d %H:%M:%S')
+    } for x in bot.messages])
 
 
 @app.route('/bot/articles')
@@ -178,7 +209,7 @@ def articles():
 @app.route('/bot/master/assign')
 def set_master():
     name = request.values.get('name')
-    bot = bots.running_bots.pop(name)
+    bot = bots.running_bots.get(name)
 
     if not bot:
         return jsonify(code=1, message="没有这个机器人")
@@ -197,12 +228,67 @@ def get_master():
     return jsonify(code=0 if bots.master_bot else 1, name=bots.master_bot.name if bots.master_bot else '')
 
 
-from raven.contrib.flask import Sentry
+@app.route('/bot/config', methods=['POST'])
+def set_config():
+    name = request.values.get('name')
+    bot = bots.running_bots.get(name)
+    key = request.values.get('key')
 
-sentry = Sentry(app, dsn=settings.SENTRY_DSN)
+    if not bot:
+        return jsonify(code=1, message="没有这个机器人")
+
+    if hasattr(bot, key):
+        if key == 'app_id':
+            bot.app_id = request.values.get('value')
+        else:
+            setattr(bot, key, 'true' == request.values.get('value'))
+        bot.save_config()
+    return jsonify(code=0, message='设置成功')
+
+
+@app.route('/bot/article/content')
+def get_article_content():
+    uid = request.values.get('id')
+    if uid:
+        article = BotArticle.query.filter_by(uid=uid).first()
+        if article:
+            resp = requests.get(settings.QINIU_ROOT + article.key + ".gz")
+            if resp.ok:
+                content = zlib.decompress(resp.content).decode('utf-8')
+                return jsonify(code=0, content=content)
+
+    return '404', 404
+
+
+@app.route('/bot/article/content/update', methods=['POST'])
+def update_article_content():
+    uid = request.values.get('id')
+    content = request.values.get('content')
+    if uid:
+        article = BotArticle.query.filter_by(uid=uid).first()
+        if article:
+            uploader.upload_to_qiniu(article.key + ".gz",
+                                     zlib.compress(content.encode('utf-8')))
+            return jsonify(code=0, message='OK')
+
+    return '404', 404
+
+
+def init():
+    from raven.contrib.flask import Sentry
+    Sentry(app, dsn=settings.SENTRY_DSN)
+    if not bots.running_bots:
+        bots.load_bots()
+
 
 if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] == 'prod':
+        init()
         app.run(host="0.0.0.0")
     else:
+        if app.debug or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+            init()
+
         app.run(debug=True)
+else:
+    init()

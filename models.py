@@ -33,6 +33,7 @@ class BotArticle(Base):
     sender = Column(String(80))
     title = Column(String(255))
     key = Column(String(255))
+    cover = Column(String(255))
     created_at = Column(DateTime)
 
 

@@ -7,6 +7,8 @@ ADD requirements.txt .
 
 RUN pip install -r requirements.txt -i https://pypi.douban.com/simple/
 
+VOLUME /bots
+
 ADD . /code/
 
 ENV TZ="Asia/Shanghai"

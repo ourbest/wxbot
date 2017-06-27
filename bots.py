@@ -1,10 +1,11 @@
 import atexit
 import io
+import json
+import os
 import tempfile
 import threading
 import time
 from collections import defaultdict
-from datetime import datetime
 
 import itchat
 from itchat.components.login import push_login
@@ -15,40 +16,47 @@ from wxpy.compatible import PY2
 from wxpy.utils import enhance_webwx_request, wrap_user_name, enhance_connection
 
 import crawler
-from models import BotMessage, db_session
+from models import db_session
 
 
 def bot_command_handler(message):
+    if message.text.startswith('🤖️'):
+        return
+
     if message.text == '退出':
-        message.reply('再见👋')
+        message.reply('🤖️再见👋')
         message.bot.logout()
     else:
-        message.reply('不知道你要干什么呢～')
+        message.reply('🤖️不知道你要干什么呢～')
 
 
 def bot_func(message):
-    try:
-        bot = message.bot
-        session = db_session()
-        msg = BotMessage(bot_name=bot.self.name, sender=message.member.name if message.member else message.sender.name,
-                         chat=message.chat.name, type=message.type, message=message.text,
-                         url=message.url, created_at=datetime.now())
-        session.add(msg)
-        session.commit()
+    print(message)
+    bot = message.bot
+    # session = db_session()
+    # msg = BotMessage(bot_name=bot.self.name, sender=message.member.name if message.member else message.sender.name,
+    #                  chat=message.chat.name, type=message.type, message=message.text,
+    #                  url=message.url, created_at=datetime.now())
+    # session.add(msg)
+    # session.commit()
 
-        if bot.master:
-            bot_master_handler(message)
-            return
-        elif bot.self == message.sender:
-            bot_command_handler(message)
-            return
+    if bot.master:
+        bot_master_handler(message)
+        return
+    elif bot.self == message.sender:
+        bot_command_handler(message)
+        return
 
-        articles = message.articles
-        if articles:
+    articles = message.articles
+    if articles and bot.crawler_articles:
+        try:
             crawler.crawler(message)
+        finally:
+            db_session.remove()
 
-    finally:
-        db_session.remove()
+    if message.type == 'Friends' and bot.auto_accept:
+        # 好友申请
+        bot.accept_friend(message.card)
 
 
 def bot_master_handler(message):
@@ -64,10 +72,10 @@ def bot_master_handler(message):
                 old_master.to_confirm_replace = None
                 set_master_bot(to_confirm_replace)
                 old_master.master = False
-                message.reply('替换成功，您已转成普通账户')
+                message.reply('🤖️替换成功，您已转成普通账户')
                 add_running_bot(old_master)
             else:
-                message.reply('替换失败')
+                message.reply('🤖️替换失败')
         else:
             bot_command_handler(message)
 
@@ -76,7 +84,7 @@ def bot_login_prepare(target, count=0):
     bot = AsyncBot()
     qr_img = bot.get_qr()
 
-    target.send_msg('扫描二维码登录')
+    target.send_msg('🤖️扫描二维码登录')
 
     tmp = '/tmp/%s.png' % time.time()
     with open(tmp, 'wb') as f:
@@ -97,20 +105,22 @@ def bot_login_watch(user, bot, count):
         if status == '200':
             # 登录成功
             bot.post_login()
-            user.send_msg('登录成功')
+            user.send_msg('🤖️登录成功')
             return
         elif status == '408':
             if count < 3:
                 bot_login_prepare(user, count + 1)
             return
         elif time.time() - begin > 300:
-            user.send_msg('登录失败')
+            user.send_msg('🤖️登录失败')
             bot.logout()
             return
         time.sleep(1)
 
 
 def add_running_bot(bot):
+    global running_bots
+
     if bot.self.name in running_bots:
         b = running_bots.pop(bot.self.name)
         b.logout()
@@ -118,7 +128,25 @@ def add_running_bot(bot):
     running_bots[bot.self.name] = bot
 
 
+def load_bots():
+    os.makedirs('/bots', exist_ok=True)
+    files = os.listdir('/bots')
+    print('Loading bots')
+    for file in files:
+        if file.endswith(".pkl"):
+            bot = AsyncBot()
+            status = bot.core.load_login_status('/bots/' + file, exitCallback=bot.bot_logout)
+            if bool(status):
+                bot.core.hotReloadDir = '/bots/' + file
+                bot.post_login(dump=False)
+
+    print("Running bots: %s" % running_bots)
+
+
 class AsyncBot(Bot):
+    def __str__(self):
+        return '<Bot: %s>' % (self.self.name if self.self else '[未登录]')
+
     def __init__(self):
         self.master = False
         self.core = itchat.Core()
@@ -136,6 +164,11 @@ class AsyncBot(Bot):
 
         self.is_listening = False
         self.listening_thread = None
+
+        self.crawler_articles = True
+        self.app_id = None
+        self.auto_accept = False
+
         if PY2:
             from wxpy.compatible.utils import TemporaryDirectory
             self.temp_dir = TemporaryDirectory(prefix='wxpy_')
@@ -160,11 +193,12 @@ class AsyncBot(Bot):
         if self.file_helper:
             self.file_helper.send_msg(msg)
 
-    def post_login(self):
+    def post_login(self, dump=True):
         self.core.web_init()
         self.core.show_mobile_login()
         self.core.get_contact(True)
-        self.core.start_receiving(self.bot_logout)
+        if dump:
+            self.core.start_receiving(self.bot_logout)
         self.isLogging = False
 
         enhance_webwx_request(self)
@@ -174,9 +208,38 @@ class AsyncBot(Bot):
 
         self.start()
         self.register_func()
-        self.file_helper.send('机器人上线了')
 
         add_running_bot(self)
+
+        self.cache_path = '/bots/%s.pkl' % self.self.name
+        self.enable_puid("/bots/%s.uid" % self.self.name)
+
+        self.load_config("/bots/%s.cfg" % self.self.name)
+
+        if dump:
+            self.file_helper.send('🤖️机器人上线了')
+            self.dump_login_status(self.cache_path)
+
+    def load_config(self, cfg):
+        if os.path.exists(cfg):
+            try:
+                with open(cfg, 'r') as fp:
+                    cfg_dict = json.load(fp)
+                    self.master = cfg_dict.get('master')
+                    if self.master:
+                        set_master_bot(self, dump=False)
+
+                    self.app_id = cfg_dict.get('app_id')
+                    self.auto_accept = cfg_dict.get('auto_accept')
+            except:
+                pass
+
+    def save_config(self):
+        cfg = "/bots/%s.cfg" % self.self.name
+        with open(cfg, "w") as fp:
+            cfg_dict = {'master': self.master, 'app_id': self.app_id,
+                        'auto_accept': self.auto_accept, 'crawler_articles': self.crawler_articles}
+            json.dump(cfg_dict, fp, ensure_ascii=False, sort_keys=True)
 
     def register_func(self):
         self.registered.append(MessageConfig(self, bot_func, chats=None, msg_types=None,
@@ -189,10 +252,12 @@ class AsyncBot(Bot):
                 master_bot.master = False
                 master_bot = None
             else:
-                master_bot.self.send_msg("%s 退出了" % self.self.name)
+                master_bot.self.send_msg("🤖️%s 退出了" % self.self.name)
 
         if self.self.name in running_bots:
             del running_bots[self.self.name]
+
+        os.remove(self.cache_path)
 
 
 master_bot = None
@@ -200,8 +265,10 @@ anonymous_bots = defaultdict(AsyncBot)
 running_bots = dict()
 
 
-def set_master_bot(bot):
+def set_master_bot(bot, dump=True):
     global master_bot
     bot.master = True
     master_bot = bot
-    master_bot.self_msg('已设置成为监控账号')
+    master_bot.self_msg('🤖️已设置成为监控账号')
+    if dump:
+        bot.save_config()
