@@ -261,6 +261,8 @@ class AsyncBot(Bot):
             del running_bots[self.self.name]
 
         os.remove(self.cache_path)
+        itchat.instanceList.remove(self.core)
+        itchat.instanceList.remove(self)
 
 
 master_bot = None
