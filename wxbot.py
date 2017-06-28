@@ -1,15 +1,12 @@
 import os
 import sys
 import uuid
-import zlib
 
-import requests
 from flask import Flask, session, render_template, jsonify, send_file, request
 
 import bots
 import cutt
 import settings
-import uploader
 from models import db_session, BotArticle
 
 app = Flask(__name__)
@@ -64,7 +61,8 @@ def get_bot_info():
                    config={
                        'auto_accept': bot.auto_accept,
                        'crawler_articles': bot.crawler_articles,
-                       'app_id': bot.app_id
+                       'app_id': bot.app_id,
+                       'auto_send': bot.auto_send
                    },
                    friends=bot.friends().stats_text(),
                    mps=bot.mps().stats_text())
@@ -101,13 +99,16 @@ def send_to_cutt():
     if uid:
         article = BotArticle.query.filter_by(uid=uid).first()
         if article:
-            resp = requests.get(settings.QINIU_ROOT + article.key + ".gz")
-            if resp.ok:
-                content = zlib.decompress(resp.content).decode('utf-8')
-
-                cutt.post_draft(article.title, content, article.cover)
-                article.status = 1
-                db_session().commit()
+            cutt.post_article(app_id, article.title, article.content)
+            # resp = requests.get(settings.QINIU_ROOT + article.key + ".gz")
+            # if resp.ok:
+            #     content = zlib.decompress(resp.content).decode('utf-8')
+            #
+            #     cutt.post_draft(article.title, content, article.cover)
+            #     article.status = 1
+            #     db_session().commit()
+            article.status = 1
+            db_session().commit()
 
     return jsonify(code=0)
 
@@ -142,11 +143,20 @@ def web_page():
     if uid:
         article = BotArticle.query.filter_by(uid=uid).first()
         if article:
-            resp = requests.get(settings.QINIU_ROOT + article.key + ".gz")
-            if resp.ok:
-                content = zlib.decompress(resp.content).decode('utf-8')
-                return render_template('article.html', title=article.title,
-                                       author=article.sender, content=content)
+            # path = 'data/content/%s/%s.html' % (article.created_at.strftime('%y%m%d'), uid)
+            # if os.path.exists(path):
+            #     with open(path, 'rt', encoding='utf-8') as fd:
+            #         content = fd.read()
+            #         return render_template('article.html', title=article.title,
+            #                                author=article.sender, content=content)
+            # else:
+            #     resp = requests.get(settings.QINIU_ROOT + article.key + ".gz")
+            #     if resp.ok:
+            #         content = zlib.decompress(resp.content).decode('utf-8')
+            #         return render_template('article.html', title=article.title,
+            #                                author=article.sender, content=content)
+            return render_template('article.html', title=article.title,
+                                   author=article.sender, content=article.content)
 
     return '404', 404
 
@@ -277,9 +287,18 @@ def get_article_content():
     if uid:
         article = BotArticle.query.filter_by(uid=uid).first()
         if article:
-            resp = requests.get(settings.QINIU_ROOT + article.key + ".gz")
-            if resp.ok:
-                content = zlib.decompress(resp.content).decode('utf-8')
+            # path = 'data/content/%s/%s.html' % (article.created_at.strftime('%y%m%d'), uid)
+            # if os.path.exists(path):
+            #     with open(path, 'rt', encoding='utf-8') as fd:
+            #         content = fd.read()
+            #         return jsonify(code=0, content=content)
+            #
+            # resp = requests.get(settings.QINIU_ROOT + article.key + ".gz")
+            # if resp.ok:
+            #     content = zlib.decompress(resp.content).decode('utf-8')
+            #     return jsonify(code=0, content=content)
+            content = article.content
+            if content:
                 return jsonify(code=0, content=content)
 
     return '404', 404
@@ -292,8 +311,13 @@ def update_article_content():
     if uid:
         article = BotArticle.query.filter_by(uid=uid).first()
         if article:
-            uploader.upload_to_qiniu(article.key + ".gz",
-                                     zlib.compress(content.encode('utf-8')))
+            path = 'data/content/%s' % article.created_at.strftime('%y%m%d')
+            os.makedirs(path, exist_ok=True)
+            with open("%s/%s.html" % (path, uid), "wt", encoding='utf-8') as fd:
+                fd.write(content)
+            #
+            # uploader.upload_to_qiniu(article.key + ".gz",
+            #                          zlib.compress(content.encode('utf-8')))
             return jsonify(code=0, message='OK')
 
     return '404', 404

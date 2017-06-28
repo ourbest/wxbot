@@ -129,15 +129,15 @@ def add_running_bot(bot):
 
 
 def load_bots():
-    os.makedirs('/bots', exist_ok=True)
-    files = os.listdir('/bots')
+    os.makedirs('data/bots', exist_ok=True)
+    files = os.listdir('data/bots')
     print('Loading bots')
     for file in files:
         if file.endswith(".pkl"):
             bot = AsyncBot()
-            status = bot.core.load_login_status('/bots/' + file, exitCallback=bot.bot_logout)
+            status = bot.core.load_login_status('data/bots/' + file, exitCallback=bot.bot_logout)
             if bool(status):
-                bot.core.hotReloadDir = '/bots/' + file
+                bot.core.hotReloadDir = 'data/bots/' + file
                 bot.post_login(dump=False)
 
     print("Running bots: %s" % running_bots)
@@ -161,6 +161,7 @@ class AsyncBot(Bot):
 
         self.isLogging = True
         self.puid_map = None
+        self.auto_send = True
 
         self.is_listening = False
         self.listening_thread = None
@@ -211,10 +212,10 @@ class AsyncBot(Bot):
 
         add_running_bot(self)
 
-        self.cache_path = '/bots/%s.pkl' % self.self.name
-        self.enable_puid("/bots/%s.uid" % self.self.name)
+        self.cache_path = 'data/bots/%s.pkl' % self.self.name
+        self.enable_puid("data/bots/%s.uid" % self.self.name)
 
-        self.load_config("/bots/%s.cfg" % self.self.name)
+        self.load_config("data/bots/%s.cfg" % self.self.name)
 
         if dump:
             self.file_helper.send('🤖️机器人上线了')
@@ -231,13 +232,15 @@ class AsyncBot(Bot):
 
                     self.app_id = cfg_dict.get('app_id')
                     self.auto_accept = cfg_dict.get('auto_accept')
+                    self.auto_send = cfg_dict.get('auto_send')
+
             except:
                 pass
 
     def save_config(self):
-        cfg = "/bots/%s.cfg" % self.self.name
+        cfg = "data/bots/%s.cfg" % self.self.name
         with open(cfg, "w") as fp:
-            cfg_dict = {'master': self.master, 'app_id': self.app_id,
+            cfg_dict = {'master': self.master, 'app_id': self.app_id, 'auto_send': self.auto_send,
                         'auto_accept': self.auto_accept, 'crawler_articles': self.crawler_articles}
             json.dump(cfg_dict, fp, ensure_ascii=False, sort_keys=True)
 

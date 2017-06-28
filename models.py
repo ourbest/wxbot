@@ -1,11 +1,15 @@
-from datetime import datetime
+import os
+import zlib
 
-from sqlalchemy import create_engine, Column, String, DateTime, func, Integer
+import requests
+from sqlalchemy import create_engine, Column, String, DateTime, Integer
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 
+import settings
+
 engine = create_engine(
-    'sqlite:///bot.db',
+    'sqlite:///data/bot.db',
     echo=True,
     convert_unicode=True,
     pool_recycle=120,
@@ -37,17 +41,38 @@ class BotArticle(Base):
     created_at = Column(DateTime)
     status = Column(Integer)
 
+    @property
+    def content(self):
+        path = 'data/content/%s/%s-%s.html' % (self.created_at.strftime('%y%m%d'), self.uid, self.title)
+        content = ""
+        if os.path.exists(path):
+            with open(path, 'rt', encoding='utf-8') as fd:
+                content = fd.read()
+        else:
+            resp = requests.get(settings.QINIU_ROOT + self.key + ".gz")
+            if resp.ok:
+                content = zlib.decompress(resp.content).decode('utf-8')
+        return content
 
-class BotMessage(Base):
-    __tablename__ = 'bot_message'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    bot_name = Column(String(80))
-    sender = Column(String(80))
-    chat = Column(String(80))
-    type = Column(String(20))
-    message = Column(String(255))
-    url = Column(String(255))
-    created_at = Column(DateTime)
+    @content.setter
+    def content(self, value):
+        path = 'data/content/%s' % self.created_at.strftime('%y%m%d')
+        os.makedirs(path, exist_ok=True)
+        with open("%s/%s-%s.html" % (path, self.uid, self.title), "wt", encoding='utf-8') as fd:
+            fd.write(value)
 
+
+#
+# class BotMessage(Base):
+#     __tablename__ = 'bot_message'
+#     id = Column(Integer, primary_key=True, autoincrement=True)
+#     bot_name = Column(String(80))
+#     sender = Column(String(80))
+#     chat = Column(String(80))
+#     type = Column(String(20))
+#     message = Column(String(255))
+#     url = Column(String(255))
+#     created_at = Column(DateTime)
+#
 
 Base.metadata.create_all(engine)

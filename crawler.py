@@ -1,5 +1,4 @@
 import hashlib
-import zlib
 from datetime import datetime
 
 import requests
@@ -7,7 +6,6 @@ from bs4 import BeautifulSoup
 from wxpy import MP
 
 import cutt
-import uploader
 from models import db_session, BotArticle
 
 
@@ -51,16 +49,23 @@ def _save_article(bot, user, title, content, url, cover):
         # del image['data-src']
         image['src'] = image_url
 
-    uploader.upload_to_qiniu(key_prefix + ".gz",
-                             zlib.compress(str(content).encode('utf-8')))  # , mime_type="text/html")
-    uploader.upload_to_qiniu(key_prefix + ".url", url)
-    uploader.upload_to_qiniu(key_prefix + ".cover", _fetch(cover, text=False))
+    # uploader.upload_to_qiniu(key_prefix + ".gz",
+    #                          zlib.compress(str(content).encode('utf-8')))  # , mime_type="text/html")
+    # uploader.upload_to_qiniu(key_prefix + ".url", url)
+    # uploader.upload_to_qiniu(key_prefix + ".cover", _fetch(cover, text=False))
 
     session = db_session()
     msg = BotArticle(bot_name=bot.self.name, uid=hashlib.md5(url.encode('utf-8')).hexdigest(),
                      cover=cutt.upload_image(cover), status=0,
                      sender=user, title=title, key=key_prefix, created_at=datetime.now())
+
+    msg.content = str(content)
     session.add(msg)
+
+    if bot.auto_send:
+        cutt.post_article(bot.app_id, title, content)
+        msg.status = 1
+
     session.commit()
 
 

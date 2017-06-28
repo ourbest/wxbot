@@ -1,3 +1,4 @@
+import base64
 import re
 
 import requests
@@ -22,9 +23,9 @@ def upload_image(url):
 
     # resp = session.post(CUTT_HOST + '/image/uploadImgUrl.json', {'url': url}).json()
     resp = session.post(CUTT_HOST + '/image/getImage.json', {'url': url}).json()
-    # if not resp.get('data'):
-    #     raw = requests.get(url).content
-    #     resp = session.post(CUTT_HOST)
+    if not resp.get('data'):
+        raw = requests.get(url).content
+        resp = session.post(CUTT_HOST + '/image/getImage.json', {'url': to_data_url(raw)}).json()
     return ('http://qn.cutt.com/%s/2' % resp.get('data')) if resp.get('code') == 0 and resp.get('data') else url
 
 
@@ -34,7 +35,7 @@ def post_article(app_id, title, content):
 
     resp = session.post(CUTT_HOST + '/cut/saveMp.json', {
         'title': title,
-        'content': content,
+        'content': to_cutt_md(content),
         'p_id': app_id
     }).json()
     return resp.get('result')
@@ -47,10 +48,23 @@ def post_draft(title, html, cover):
     resp = session.post(CUTT_HOST + '/cut/draft.json', {
         'title': title,
         'imageId': cover[19:-2],
-        'content': 'ZhiyueMD<style>#js_content {font-size: 16px;word-wrap: break-word;-webkit-hyphens: auto;-ms-hyphens: auto;hyphens: auto;width: 740px;margin-left: auto;margin-right: auto;}#js_content table {margin-bottom: 10px;border-collapse: collapse;display: table;width: 100% !important;}#js_content * { max-width: 100% !important;box-sizing: border-box !important;-webkit-box-sizing: border-box !important;word-wrap: break-word !important;}</style>%s' % html
+        'content': to_cutt_md(html)
     }).json()
 
     return resp.get('result')
+
+
+def to_cutt_md(html):
+    return 'ZhiyueMD<style>#js_content {font-size: 16px;word-wrap: break-word;-webkit-hyphens: auto;' \
+           '-ms-hyphens: auto;hyphens: auto;width: 740px;margin-left: auto;margin-right: auto;}' \
+           '#js_content table {margin-bottom: 10px;border-collapse: collapse;display: table;width: 100%% !important;}' \
+           '#js_content * { max-width: 100%% !important;box-sizing: border-box !important;' \
+           '-webkit-box-sizing: border-box !important;word-wrap: break-word !important;}</style>%s' % html
+
+
+def to_data_url(image):
+    base_encoded = base64.b64encode(image).decode()
+    return 'data:image/png;base64,%s' % base_encoded
 
 
 IMG_RE = re.compile(r'<img src="http://qn.cutt.com/(.+?)/2"/>', re.IGNORECASE)
