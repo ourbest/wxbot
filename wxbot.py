@@ -325,7 +325,8 @@ def update_article_content():
 
 
 def init():
-    if not bots.running_bots:
+    print('Init app...')
+    if len(bots.running_bots) == 0:
         bots.load_bots()
 
     from raven.contrib.flask import Sentry
