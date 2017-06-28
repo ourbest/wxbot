@@ -15,14 +15,6 @@ app = Flask(__name__)
 app.secret_key = settings.SECRET_KEY
 
 
-def init():
-        from raven.contrib.flask import Sentry
-        Sentry(app, dsn=settings.SENTRY_DSN)
-
-
-init()
-
-
 @app.route('/')
 def index():
     return render_template("index.html", version=settings.JS_VERSION)
@@ -332,9 +324,21 @@ def update_article_content():
     return '404', 404
 
 
+def init():
+    from raven.contrib.flask import Sentry
+    Sentry(app, dsn=settings.SENTRY_DSN)
+    if not bots.running_bots:
+        bots.load_bots()
+
+
 if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] == 'prod':
+        init()
         app.run(host="0.0.0.0")
     else:
+        if app.debug or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+            init()
 
         app.run(debug=True)
+else:
+    init()

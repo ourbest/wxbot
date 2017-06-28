@@ -284,9 +284,3 @@ def set_master_bot(bot, dump=True):
     master_bot.self_msg('🤖️已设置成为监控账号')
     if dump:
         bot.save_config()
-
-_inited = False
-
-if not _inited:
-    _inited = True
-    load_bots()
