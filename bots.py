@@ -152,6 +152,10 @@ class AsyncBot(Bot):
         self.core = itchat.Core()
         itchat.instanceList.append(self)
 
+        # 用于 "synccheck" 请求的 "_" 参数，每次请求时 + 1
+        self._sync_check_iterations = int(time.time() * 1000)
+
+        self.auto_mark_as_read = False
         enhance_connection(self.core.s)
 
         self.cache_path = None
@@ -260,9 +264,12 @@ class AsyncBot(Bot):
         if self.self.name in running_bots:
             del running_bots[self.self.name]
 
-        os.remove(self.cache_path)
-        itchat.instanceList.remove(self.core)
-        itchat.instanceList.remove(self)
+        # os.remove(self.cache_path)
+        if self.core in itchat.instanceList:
+            itchat.instanceList.remove(self.core)
+
+        if self in itchat.instanceList:
+            itchat.instanceList.remove(self)
 
 
 master_bot = None
