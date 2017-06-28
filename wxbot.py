@@ -325,10 +325,11 @@ def update_article_content():
 
 
 def init():
-    from raven.contrib.flask import Sentry
-    Sentry(app, dsn=settings.SENTRY_DSN)
     if not bots.running_bots:
         bots.load_bots()
+
+    from raven.contrib.flask import Sentry
+    Sentry(app, dsn=settings.SENTRY_DSN)
 
 
 if __name__ == '__main__':
