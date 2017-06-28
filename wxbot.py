@@ -3,6 +3,7 @@ import sys
 import uuid
 
 from flask import Flask, session, render_template, jsonify, send_file, request
+from wxpy import Message
 
 import bots
 import cutt
@@ -208,7 +209,7 @@ def messages():
         return jsonify(code=1, message="没有这个机器人")
 
     return jsonify(code=0, messages=[{
-        'sender': x.member.name if x.member else x.sender.name,
+        'sender': x.member.name if isinstance(x, Message) and x.member else x.sender.name,
         'chat': x.chat.name,
         'type': x.type,
         'message': x.text,
