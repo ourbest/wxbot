@@ -3,12 +3,8 @@ import os
 
 SENTRY_DSN = 'https://c6eb05490aeb4f0088e45320b06160aa:74d3695c209944eb975a9e2d6dff2b04@sentry.io/183612'
 SECRET_KEY = 'A0Zr98jdai12oqwjo/3yX R~XHH!jmN]LWX/,?RT'
-JS_VERSION = 'f3e5236eaafd750373b7'
+JS_VERSION = '72a6393bf3a527d3a1e5'
 
-QINIU_ACCESS_KEY = 'TKO16BTj6tlUja1wNjRQu1tZnvx8sXFfoHdKJrOA'
-QINIU_SECRET_KEY = 'TZH53PQ_hDOx2RaXgr5OEm_m4onpNNECUKpzc9sF'
-QINIU_BUCKET = 'mpresources'
-QINIU_ROOT = 'http://os23y083b.bkt.clouddn.com/'
 
 
 def load_settings():

@@ -1,12 +1,8 @@
 import os
-import zlib
 
-import requests
 from sqlalchemy import create_engine, Column, String, DateTime, Integer
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
-
-import settings
 
 engine = create_engine(
     'sqlite:///data/bot.db',
@@ -48,10 +44,10 @@ class BotArticle(Base):
         if os.path.exists(path):
             with open(path, 'rt', encoding='utf-8') as fd:
                 content = fd.read()
-        else:
-            resp = requests.get(settings.QINIU_ROOT + self.key + ".gz")
-            if resp.ok:
-                content = zlib.decompress(resp.content).decode('utf-8')
+        # else:
+        #     resp = requests.get(settings.QINIU_ROOT + self.key + ".gz")
+        #     if resp.ok:
+        #         content = zlib.decompress(resp.content).decode('utf-8')
         return content
 
     @content.setter
