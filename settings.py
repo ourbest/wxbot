@@ -1,3 +1,4 @@
+import logging
 import os
 
 SENTRY_DSN = 'https://c6eb05490aeb4f0088e45320b06160aa:74d3695c209944eb975a9e2d6dff2b04@sentry.io/183612'
@@ -64,12 +65,14 @@ LOGGING = {
 
     "formatters": {
         "simple": {
-            "format": "%(asctime)s - %(name)s - %(funcName)s:%(lineno)s - %(levelname)s - %(message)s"
+            "format": "%(asctime)s - %(levelname)s - %(message)s"
         },
         'generic': {
-            'format': '%(asctime)s [%(process)d] [%(levelname)s] %(message)s',
+            'format': '%(asctime)s %(message)s',
             'datefmt': '%Y-%m-%d %H:%M:%S',
             '()': 'logging.Formatter',
         },
     }
 }
+
+logger = logging.getLogger('wxbot')

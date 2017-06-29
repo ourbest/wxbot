@@ -11,6 +11,7 @@ import bots
 import cutt
 import settings
 from models import db_session, BotArticle
+from settings import logger
 
 app = Flask(__name__)
 
@@ -339,6 +340,7 @@ if __name__ == '__main__':
         init()
         app.run(host="0.0.0.0")
     else:
+        logger.info('App start')
         if app.debug or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
             init()
 

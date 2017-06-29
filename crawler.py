@@ -1,5 +1,4 @@
 import hashlib
-import logging
 from datetime import datetime
 
 import requests
@@ -8,8 +7,7 @@ from wxpy import MP
 
 import cutt
 from models import db_session, BotArticle
-
-logger = logging.getLogger(__name__)
+from settings import logger
 
 
 def crawler(message):

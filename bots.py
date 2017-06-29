@@ -1,7 +1,6 @@
 import atexit
 import io
 import json
-import logging
 import os
 import tempfile
 import threading
@@ -18,8 +17,7 @@ from wxpy.utils import enhance_webwx_request, wrap_user_name, enhance_connection
 
 import crawler
 from models import db_session
-
-logger = logging.getLogger(__name__)
+from settings import logger
 
 
 def bot_command_handler(message):
