@@ -43,7 +43,7 @@ def bot_func(message):
     if bot.master:
         bot_master_handler(message)
         return
-    elif bot.self == message.sender and message.receiver in (bot.self, bot.file_helper):
+    elif bot.self == message.sender and message.chat in (bot.self, bot.file_helper):
         bot_command_handler(message)
         return
 
@@ -61,7 +61,7 @@ def bot_func(message):
 
 def bot_master_handler(message):
     global master_bot
-    if message.sender == message.bot.self and message.receiver in (message.bot.self, message.bot.file_helper):
+    if message.sender == message.bot.self and message.chat in (message.bot.self, message.bot.file_helper):
         # 只处理自己发给自己的
         if '登录' == message.text:
             bot_login_prepare(message.bot.file_helper)
