@@ -241,6 +241,7 @@ def articles():
                        'title': x.title,
                        'cover': x.cover,
                        'id': x.uid,
+                       'status': x.status,
                        'created_at': x.created_at.strftime('%Y-%m-%d %H:%M:%S')
                    } for x in msgs])
 
