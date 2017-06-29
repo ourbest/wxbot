@@ -37,6 +37,15 @@ LOGGING = {
             "formatter": "simple",
             "filename": logging_path + "/debug.log"
         },
+
+        "wxbot": {
+            'level': 'DEBUG',
+            'class': 'commons.SafeRotatingFileHandler',
+            'when': 'midnight',
+            "formatter": "simple",
+            "filename": logging_path + "/wxbot.log"
+        },
+
         'access_file': {
             'level': 'INFO',
             'class': 'commons.SafeRotatingFileHandler',
@@ -50,6 +59,12 @@ LOGGING = {
         'root': {
             'level': 'INFO',
             'handlers': ["debug"],
+        },
+
+        'wxbot': {
+            'level': 'INFO',
+            'propagate': False,
+            'handlers': ["wxbot"],
         },
         'werkzeug': {
             'level': 'INFO',
