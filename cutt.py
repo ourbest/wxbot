@@ -3,6 +3,8 @@ import re
 
 import requests
 
+from settings import logger
+
 CUTT_HOST = 'http://cms.cutt.com'
 
 session = requests.session()
@@ -33,6 +35,7 @@ def post_article(app_id, title, content):
     if not session.has_logged:
         login_cutt()
 
+    logger.info('Send to cutt: %s' % title)
     resp = session.post(CUTT_HOST + '/cut/saveMp.json', {
         'title': title,
         'content': to_cutt_md(content),

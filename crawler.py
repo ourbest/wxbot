@@ -58,7 +58,7 @@ def _save_article(bot, user, title, content, url, cover):
 
     session = db_session()
     msg = BotArticle(bot_name=bot.self.name, uid=hashlib.md5(url.encode('utf-8')).hexdigest(),
-                     cover=cutt.upload_image(cover), status=0,
+                     cover=cutt.upload_image(cover), status=1 if bot.auto_send else 0,
                      sender=user, title=title, key=key_prefix, created_at=datetime.now())
 
     msg.content = str(content)
@@ -66,7 +66,6 @@ def _save_article(bot, user, title, content, url, cover):
 
     if bot.auto_send:
         cutt.post_article(bot.app_id, title, content)
-        msg.status = 1
 
     session.commit()
 
