@@ -171,7 +171,7 @@ class AsyncBot(Bot):
 
         self.isLogging = True
         self.puid_map = None
-        self.auto_send = True
+        self.auto_send = False
 
         self.is_listening = False
         self.listening_thread = None
