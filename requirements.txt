@@ -9,3 +9,4 @@ gunicorn
 gevent
 raven[flask]
 blinker
+py-dev-common>=0.1.9

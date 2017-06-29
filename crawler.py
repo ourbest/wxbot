@@ -1,4 +1,5 @@
 import hashlib
+import logging
 from datetime import datetime
 
 import requests
@@ -7,6 +8,8 @@ from wxpy import MP
 
 import cutt
 from models import db_session, BotArticle
+
+logger = logging.getLogger(__name__)
 
 
 def crawler(message):
@@ -28,6 +31,7 @@ def crawler(message):
                 content = bs_article.find(id='js_content')
 
                 if content:
+                    logger.info('[%s] 文章 %s - %s' % (message.bot.bot_name, message.chat.name, article.title))
                     _save_article(message.bot, message.chat.name, article.title, content, article.url, article.cover)
 
 

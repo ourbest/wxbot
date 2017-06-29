@@ -18,4 +18,58 @@ def load_settings():
             if hasattr(settings, name):
                 setattr(settings, name, v)
 
+
 load_settings()
+
+logging_path = 'data/logs'
+
+if not os.path.exists(logging_path):
+    os.makedirs(logging_path, exist_ok=True)
+
+LOGGING = {
+    "version": 1,
+    "handlers": {
+        "debug": {
+            'level': 'DEBUG',
+            'class': 'commons.SafeRotatingFileHandler',
+            'when': 'midnight',
+            "formatter": "simple",
+            "filename": logging_path + "/debug.log"
+        },
+        'access_file': {
+            'level': 'INFO',
+            'class': 'commons.SafeRotatingFileHandler',
+            'filename': logging_path + "/access.log",
+            'when': 'midnight',
+            'formatter': 'generic',
+            'encoding': 'utf-8',
+        },
+    },
+    "loggers": {
+        'root': {
+            'level': 'INFO',
+            'handlers': ["debug"],
+        },
+        'werkzeug': {
+            'level': 'INFO',
+            'handlers': ['debug'],
+            'propagate': False,
+        },
+        'gunicorn.access': {
+            'level': 'INFO',
+            'handlers': ['access_file'],
+            'propagate': False,
+        },
+    },
+
+    "formatters": {
+        "simple": {
+            "format": "%(asctime)s - %(name)s - %(funcName)s:%(lineno)s - %(levelname)s - %(message)s"
+        },
+        'generic': {
+            'format': '%(asctime)s [%(process)d] [%(levelname)s] %(message)s',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+            '()': 'logging.Formatter',
+        },
+    }
+}

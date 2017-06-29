@@ -1,6 +1,7 @@
 import atexit
 import io
 import json
+import logging
 import os
 import tempfile
 import threading
@@ -18,6 +19,8 @@ from wxpy.utils import enhance_webwx_request, wrap_user_name, enhance_connection
 import crawler
 from models import db_session
 
+logger = logging.getLogger(__name__)
+
 
 def bot_command_handler(message):
     if message.text.startswith('🤖️'):
@@ -31,7 +34,7 @@ def bot_command_handler(message):
 
 
 def bot_func(message):
-    print(message)
+    logger.info("[%s] %s " % (message.bot.bot_name, message))
     bot = message.bot
     # session = db_session()
     # msg = BotMessage(bot_name=bot.self.name, sender=message.member.name if message.member else message.sender.name,
@@ -105,6 +108,7 @@ def bot_login_watch(user, bot, count):
         if status == '200':
             # 登录成功
             bot.post_login()
+            logger.info("[%s] %s" % (bot.bot_name, '登录成功'))
             user.send_msg('🤖️登录成功')
             return
         elif status == '408':
@@ -144,6 +148,10 @@ def load_bots():
 
 
 class AsyncBot(Bot):
+    @property
+    def bot_name(self):
+        return self.self.name if hasattr(self, 'self') else '[匿名]'
+
     def __str__(self):
         return '<Bot: %s>' % (self.self.name if self.self else '[未登录]')
 
@@ -254,6 +262,9 @@ class AsyncBot(Bot):
 
     def bot_logout(self):
         global master_bot
+
+        logger.info("[%s] %s" % (self.bot_name, '退出登录'))
+
         if master_bot:
             if self == master_bot:
                 master_bot.master = False

@@ -1,3 +1,5 @@
+import logging
+import logging.config
 import os
 import sys
 import uuid
@@ -329,6 +331,7 @@ def init():
     Sentry(app, dsn=settings.SENTRY_DSN)
     if not bots.running_bots:
         bots.load_bots()
+    logging.config.dictConfig(settings.LOGGING)
 
 
 if __name__ == '__main__':
