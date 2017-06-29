@@ -19,4 +19,4 @@ ENV PYTHONUNBUFFERED=1
 
 EXPOSE 5000
 
-ENTRYPOINT ["gunicorn", "-b", "0.0.0.0:5000", "-k", "gevent", "wxbot:app"]
+ENTRYPOINT ["gunicorn", "--access-logfile", "data/logs/gunicorn.log", "-b", "0.0.0.0:5000", "-k", "gevent", "wxbot:app"]
