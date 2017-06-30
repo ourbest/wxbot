@@ -3,7 +3,7 @@ import os
 
 SENTRY_DSN = 'https://c6eb05490aeb4f0088e45320b06160aa:74d3695c209944eb975a9e2d6dff2b04@sentry.io/183612'
 SECRET_KEY = 'A0Zr98jdai12oqwjo/3yX R~XHH!jmN]LWX/,?RT'
-JS_VERSION = '72a6393bf3a527d3a1e5'
+JS_VERSION = '6823e50770363aaa15ee'
 
 
 
