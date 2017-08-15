@@ -64,8 +64,8 @@ def _save_article(bot, user, title, content, url, cover):
     msg.content = str(content)
     session.add(msg)
 
-    if bot.auto_send:
-        cutt.post_article(bot.app_id, title, content)
+    # if bot.auto_send:
+    #     cutt.post_article(bot.app_id, title, content)
 
     session.commit()
 
