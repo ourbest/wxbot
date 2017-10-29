@@ -1,8 +1,10 @@
 import base64
 import re
+from datetime import datetime
 
 import requests
 
+import settings
 from settings import logger
 
 CUTT_HOST = 'http://cms.cutt.com'
@@ -76,3 +78,24 @@ IMG_RE = re.compile(r'<img src="http://qn.cutt.com/(.+?)/2"/>', re.IGNORECASE)
 def convert_html(html):
     md = IMG_RE.sub(r'![图片](\1)', html)
     return 'ZhiyueMD' + md
+
+
+def send_dingding_msg(msg, phone):
+    # https://oapi.dingtalk.com/robot/send?access_token=114b9ee24111a47f7dd9864195f905ed766c92ddb3c1b346b70d6bf3d4a3ae0d
+    url = 'https://oapi.dingtalk.com/robot/send?access_token=' + settings.DINGDING_TOKEN
+    dingding_msg = {
+        'msgtype': 'text',
+        'text': {
+            'content': msg
+        },
+        'at': {
+            'atMobiles': [phone],
+            'isAtAll': False
+        }
+    } if phone else {
+        'msgtype': 'text',
+        'text': {
+            'content': msg
+        }
+    }
+    requests.post(url, json=dingding_msg)

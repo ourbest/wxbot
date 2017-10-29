@@ -2,9 +2,12 @@ import logging
 import logging.config
 import os
 import sys
+import traceback
 import uuid
+from time import strftime
 
 from flask import Flask, session, render_template, jsonify, send_file, request
+from werkzeug.exceptions import Unauthorized
 from wxpy import Message
 
 import bots
@@ -23,6 +26,14 @@ def index():
     return render_template("index.html", version=settings.JS_VERSION)
 
 
+@app.route('/bot/login', methods=['POST'])
+def login():
+    if settings.PWD == request.values.get('pwd'):
+        session['login'] = True
+
+    return jsonify(error=not is_login())
+
+
 @app.route('/dist/<file>')
 def dist(file):
     return send_file('static/dist/' + file, cache_timeout=24 * 30 * 3600)
@@ -31,6 +42,32 @@ def dist(file):
 @app.route('/bot/bots')
 def get_bots():
     return jsonify(bots=list(bots.running_bots.keys()), master=bots.master_bot.self.name if bots.master_bot else '')
+
+
+@app.before_request
+def after_request():
+    if request.path in ('/', '/bot/login', '/favicon.ico') or request.path.find('/dist') == 0:
+        pass
+    elif not is_login():
+        raise Unauthorized()
+
+
+@app.errorhandler(Exception)
+def exceptions(e):
+    ts = strftime('[%Y-%b-%d %H:%M]')
+    tb = traceback.format_exc()
+    logger.error('%s %s %s %s %s 5xx INTERNAL SERVER ERROR\n%s',
+                 ts,
+                 request.remote_addr,
+                 request.method,
+                 request.scheme,
+                 request.full_path,
+                 tb)
+
+    if isinstance(e, Unauthorized):
+        return "401", 401
+
+    return "Internal Server Error", 500
 
 
 @app.route('/bot/qr')
@@ -66,7 +103,9 @@ def get_bot_info():
                        'auto_accept': bot.auto_accept,
                        'crawler_articles': bot.crawler_articles,
                        'app_id': bot.app_id,
-                       'auto_send': bot.auto_send
+                       'auto_send': bot.auto_send,
+                       'notify_dingding': bot.notify_dingding,
+                       'master_phone': bot.master_phone,
                    },
                    friends=bot.friends().stats_text(),
                    mps=bot.mps().stats_text())
@@ -134,6 +173,10 @@ def get_session_id():
         sid = uuid.uuid4()
         session['sid'] = sid
     return sid
+
+
+def is_login():
+    return session.get('login')
 
 
 @app.teardown_request
@@ -278,10 +321,12 @@ def set_config():
         return jsonify(code=1, message="没有这个机器人")
 
     if hasattr(bot, key):
-        if key == 'app_id':
-            bot.app_id = request.values.get('value')
+        value = request.values.get('value')
+        if key == 'app_id' or value not in ('true', 'false'):
+            # bot.app_id = value
+            setattr(bot, key, value)
         else:
-            setattr(bot, key, 'true' == request.values.get('value'))
+            setattr(bot, key, 'true' == value)
         bot.save_config()
     return jsonify(code=0, message='设置成功')
 

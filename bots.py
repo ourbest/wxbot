@@ -16,6 +16,7 @@ from wxpy.compatible import PY2
 from wxpy.utils import enhance_webwx_request, wrap_user_name, enhance_connection
 
 import crawler
+import cutt
 from models import db_session
 from settings import logger
 
@@ -58,6 +59,8 @@ def bot_func(message):
     if message.type == 'Friends' and bot.auto_accept:
         # 好友申请
         bot.accept_friend(message.card)
+        if bot.notify_dingding:
+            cutt.send_dingding_msg('%s 自动接受了好友请求 %s' % (bot.self.name, message.card.name), bot.master_phone)
 
 
 def bot_master_handler(message):
@@ -179,6 +182,8 @@ class AsyncBot(Bot):
         self.crawler_articles = True
         self.app_id = None
         self.auto_accept = False
+        self.notify_dingding = False
+        self.master_phone = None
 
         if PY2:
             from wxpy.compatible.utils import TemporaryDirectory
@@ -227,6 +232,9 @@ class AsyncBot(Bot):
 
         self.load_config("data/bots/%s.cfg" % self.self.name)
 
+        if self.notify_dingding:
+            cutt.send_dingding_msg('机器人 %s 上线了' % self.self.name, self.master_phone)
+
         if dump:
             self.file_helper.send('🤖️机器人上线了')
             self.dump_login_status(self.cache_path)
@@ -243,15 +251,23 @@ class AsyncBot(Bot):
                     self.app_id = cfg_dict.get('app_id')
                     self.auto_accept = cfg_dict.get('auto_accept')
                     self.auto_send = cfg_dict.get('auto_send')
-
+                    self.notify_dingding = cfg_dict.get('notify_dingding')
+                    self.master_phone = cfg_dict.get('master_phone')
             except:
                 pass
 
     def save_config(self):
         cfg = "data/bots/%s.cfg" % self.self.name
         with open(cfg, "w") as fp:
-            cfg_dict = {'master': self.master, 'app_id': self.app_id, 'auto_send': self.auto_send,
-                        'auto_accept': self.auto_accept, 'crawler_articles': self.crawler_articles}
+            cfg_dict = {
+                'master': self.master,
+                'app_id': self.app_id,
+                'auto_send': self.auto_send,
+                'auto_accept': self.auto_accept,
+                'crawler_articles': self.crawler_articles,
+                'notify_dingding': self.notify_dingding,
+                'master_phone': self.master_phone,
+            }
             json.dump(cfg_dict, fp, ensure_ascii=False, sort_keys=True)
 
     def register_func(self):
@@ -262,6 +278,9 @@ class AsyncBot(Bot):
         global master_bot
 
         logger.info("[%s] %s" % (self.bot_name, '退出登录'))
+
+        if self.notify_dingding:
+            cutt.send_dingding_msg('机器人 %s 下线了' % self.self.name, self.master_phone)
 
         if master_bot:
             if self == master_bot:
