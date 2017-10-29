@@ -32,6 +32,12 @@ def crawler(message):
                     logger.info('[%s] 文章 %s - %s' % (message.bot.bot_name, message.chat.name, article.title))
                     _save_article(message.bot, message.chat.name, article.title, content, article.url, article.cover)
 
+                    # bot = message.bot
+                    # if bot.notify_dingding:
+                    #     cutt.send_dingding_msg('%s推送了一篇文章【%s】%s'
+                    #                            % (message.chat.name, articles[0].title, articles[0].url),
+                    #                            bot.master_phone)
+
 
 def _fetch(url, text=True):
     return requests.get(url).text if text else requests.get(url).content
