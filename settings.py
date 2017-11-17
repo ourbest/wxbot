@@ -1,9 +1,9 @@
 import logging
 import os
 
-SENTRY_DSN = 'https://c6eb05490aeb4f0088e45320b06160aa:74d3695c209944eb975a9e2d6dff2b04@sentry.io/183612'
+SENTRY_DSN = 'http://c7445f10efde4e1499765af810268806:c43aacb712a84b188b0860d80fa42f7a@10.9.144.173:9000/6'
 SECRET_KEY = 'A0Zr98jdai12oqwjo/3yX R~XHH!jmN]LWX/,?RT'
-JS_VERSION = '74a638543c705929f507'
+JS_VERSION = 'd15891dfaa7139aeea09'
 
 DINGDING_TOKEN = 'd3f5c74d4dea6d2bd4836a97c45110770d1fc48addefb519e31dbeaf1f740767'
 PWD = 'woshijianwangyuangong'
