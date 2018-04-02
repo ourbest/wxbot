@@ -139,11 +139,15 @@ def load_bots():
     print('Loading bots')
     for file in files:
         if file.endswith(".pkl"):
-            bot = AsyncBot()
-            status = bot.core.load_login_status('data/bots/' + file, exitCallback=bot.bot_logout)
-            if bool(status):
-                bot.core.hotReloadDir = 'data/bots/' + file
-                bot.post_login(dump=False)
+            try:
+                bot = AsyncBot()
+                status = bot.core.load_login_status('data/bots/' + file, exitCallback=bot.bot_logout)
+                if bool(status):
+                    bot.core.hotReloadDir = 'data/bots/' + file
+                    bot.post_login(dump=False)
+                print("Loading %s successful" % file)
+            except:
+                print("Error loading bot %s" % file, exc_info=1)
 
     print("Running bots: %s" % running_bots)
 
