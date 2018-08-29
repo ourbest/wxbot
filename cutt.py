@@ -6,7 +6,7 @@ import requests
 import settings
 from settings import logger
 
-CUTT_HOST = 'http://cms.cutt.com'
+CUTT_HOST = 'http://cms.appgc.cn'
 
 session = requests.session()
 session.has_logged = False
