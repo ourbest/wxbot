@@ -29,7 +29,7 @@ def upload_image(url):
     if not resp.get('data'):
         raw = requests.get(url).content
         resp = session.post(CUTT_HOST + '/image/getImage.json', {'url': to_data_url(raw)}).json()
-    return ('http://qn.cutt.com/%s/2' % resp.get('data')) if resp.get('code') == 0 and resp.get('data') else url
+    return ('http://qn.zhiyueapp.cn/%s/2' % resp.get('data')) if resp.get('code') == 0 and resp.get('data') else url
 
 
 def post_article(app_id, title, content):
@@ -71,7 +71,7 @@ def to_data_url(image):
     return 'data:image/png;base64,%s' % base_encoded
 
 
-IMG_RE = re.compile(r'<img src="http://qn.cutt.com/(.+?)/2"/>', re.IGNORECASE)
+IMG_RE = re.compile(r'<img src="http://qn\.[^/]+/(.+?)/2"/>', re.IGNORECASE)
 
 
 def convert_html(html):
@@ -100,7 +100,7 @@ def send_dingding_msg(msg, phone):
     requests.post(url, json=dingding_msg)
 
 
-def notify_internal(user, title, url, content):
-    url = 'http://10.9.21.184/api/input/mp'
-    post = requests.post(url, {'from': user, 'title': title, 'content': content, 'url': url})
+def notify_internal(user, title, url, content, cover):
+    the_url = 'http://10.9.21.184/api/input/mp'
+    post = requests.post(the_url, {'from': user, 'title': title, 'content': content, 'url': url, 'cover': cover})
     logger.info(post.text)
