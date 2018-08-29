@@ -20,7 +20,7 @@ def load_settings():
 
 load_settings()
 
-logging_path = '/bots/logs'
+logging_path = 'bots/logs'
 
 if not os.path.exists(logging_path):
     os.makedirs(logging_path, exist_ok=True)
