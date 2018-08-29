@@ -1,4 +1,4 @@
-FROM python:3
+FROM ourbest/python3
 
 RUN mkdir /code/
 WORKDIR /code/
