@@ -70,7 +70,7 @@ def _save_article(bot, user, title, content, url, cover):
     msg.content = str(content)
     session.add(msg)
 
-    cutt.notify_internal(user, title, content)
+    cutt.notify_internal(user, title, url, msg.content)
 
     # if bot.auto_send:
     #     cutt.post_article(bot.app_id, title, content)

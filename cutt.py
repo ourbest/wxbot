@@ -100,7 +100,7 @@ def send_dingding_msg(msg, phone):
     requests.post(url, json=dingding_msg)
 
 
-def notify_internal(user, title, content):
+def notify_internal(user, title, url, content):
     url = 'http://10.9.21.184/api/input/mp'
-    post = requests.post(url, {'from': user, 'title': title, 'content': content})
+    post = requests.post(url, {'from': user, 'title': title, 'content': content, 'url': url})
     logger.info(post.text)
