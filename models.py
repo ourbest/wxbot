@@ -4,6 +4,8 @@ from sqlalchemy import create_engine, Column, String, DateTime, Integer
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 
+from settings import logger
+
 engine = create_engine(
     'sqlite:///data/bot.db',
     echo=True,
@@ -71,4 +73,11 @@ class BotArticle(Base):
 #     created_at = Column(DateTime)
 #
 
-Base.metadata.create_all(engine)
+try:
+    try:
+        Base.metadata.create_all(engine)
+    except:
+        init_db()
+        Base.metadata.create_all(engine)
+except:
+    logger.warning('error', exc_info=1)
