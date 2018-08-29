@@ -1,6 +1,5 @@
 import base64
 import re
-from datetime import datetime
 
 import requests
 
@@ -99,3 +98,9 @@ def send_dingding_msg(msg, phone):
         }
     }
     requests.post(url, json=dingding_msg)
+
+
+def notify_internal(user, title, content):
+    url = 'http://10.9.21.184/api/input/mp'
+    post = requests.post(url, {'from': user, 'title': title, 'content': content})
+    logger.info(post.text)
