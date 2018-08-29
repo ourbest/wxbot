@@ -1,6 +1,5 @@
 FROM ourbest/python3
 
-RUN mkdir /code/
 WORKDIR /code/
 
 ADD requirements.txt .
