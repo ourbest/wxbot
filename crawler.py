@@ -85,9 +85,12 @@ def _test_url(title, url, cover=None):
     images = content.find_all("img")
 
     for image in images:
+        style = image['style'] if image.has_attr('style') else ''
         image_url = cutt.upload_image(image['data-src'])
         image.attrs.clear()
         image['src'] = image_url
+        if style:
+            image['style'] = style
 
     cutt.post_draft(title, str(content), cover)
 
