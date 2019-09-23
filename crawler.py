@@ -45,7 +45,11 @@ def crawler(message):
 
 
 def _fetch(url, text=True):
-    return requests.get(url).text if text else requests.get(url).content
+    val = requests.get(url, proxies={
+        'http': 'http://10.9.131.47:3128',
+        'https': 'http://10.9.131.47:3128'
+    })
+    return val.text if text else val.content
 
 
 def _save_article(bot, user, title, content, url, cover):
