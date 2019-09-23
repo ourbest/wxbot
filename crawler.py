@@ -53,7 +53,7 @@ def _fetch(url, text=True):
 
 
 def _save_article(bot, user, title, content, url, cover):
-    logger.info('Save article %s' % title)
+    logger.info('[%s] Save article %s' % (bot.bot_name, title))
     key_prefix = 'mp/%s/%s/%s' % (user, datetime.now().strftime('%y%m%d'), title)
 
     images = content.find_all("img")

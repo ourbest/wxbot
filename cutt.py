@@ -101,7 +101,7 @@ def send_dingding_msg(msg, phone):
 
 
 def notify_internal(user, title, url, content, cover):
-    logger.info('Notify %s - %s - %s' % (user, title, url))
+    logger.info('[%s] %s - %s' % (user, title, url))
     the_url = 'http://10.9.21.184/api/input/mp'
     post = requests.post(the_url, {'from': user, 'title': title, 'content': content, 'url': url, 'cover': cover})
-    logger.info(post.text)
+    logger.info('[%s] %s' % (user, post.text))
