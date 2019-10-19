@@ -32,6 +32,14 @@ def upload_image(url):
     return ('http://qn.zhiyueapp.cn/%s/2' % resp.get('data')) if resp.get('code') == 0 and resp.get('data') else url
 
 
+def upload_raw(data):
+    if not session.has_logged:
+        login_cutt()
+
+    resp = session.post(CUTT_HOST + '/image/getImage.json', {'url': to_data_url(data)}).json()
+    return resp.get('data')
+
+
 def post_article(app_id, title, content):
     if not session.has_logged:
         login_cutt()
