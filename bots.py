@@ -53,19 +53,19 @@ def bot_func(message):
         message_type = '%s' % message.type
         logger.info('Message from %s type %s' % (message.chat, message_type))
         if message_type == 'Text':
-            requests.post('https://tg.appgc.cn/api/tg/save', {
+            logger.info('Request tg return %s' % requests.post('https://tg.appgc.cn/api/tg/save', {
                 'text': message.text,
                 'type': message_type,
-                'sender': '%s' % message.sender
-            }).json()
+                'sender': '%s' % message.sender.name
+            }).json())
         elif message_type in ['Picture', 'Video']:
             raw = message.get_file()
             the_id = cutt.upload_raw(raw)
-            requests.post('https://tg.appgc.cn/api/tg/save', {
+            logger.info('Request tg return %s' % requests.post('https://tg.appgc.cn/api/tg/save', {
                 'text': the_id,
                 'type': message_type,
-                'sender': '%s' % message.sender
-            }).json()
+                'sender': '%s' % message.sender.name
+            }).json())
         return
 
     articles = message.articles
