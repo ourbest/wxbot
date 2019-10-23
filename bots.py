@@ -49,7 +49,7 @@ def bot_func(message):
     elif bot.self == message.sender and message.chat in (bot.self, bot.file_helper):
         bot_command_handler(message)
         return
-    elif '京东菁英站' in message.chat:
+    elif '京东菁英站' in message.chat.name:
         if message.type == 'Text':
             requests.post('https://tg.appgc.cn/api/tg/save', {
                 'text': message.text,
