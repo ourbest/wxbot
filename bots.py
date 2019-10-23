@@ -49,20 +49,22 @@ def bot_func(message):
     elif bot.self == message.sender and message.chat in (bot.self, bot.file_helper):
         bot_command_handler(message)
         return
-    elif '京东菁英站' in message.chat.name:
-        if message.type == 'Text':
+    elif '京东菁英站' in '%s' % message.chat:
+        message_type = '%s' % message.type
+        logger.info('Message from %s type %s' % (message.chat, message_type))
+        if message_type == 'Text':
             requests.post('https://tg.appgc.cn/api/tg/save', {
                 'text': message.text,
-                'type': message.type,
-                'sender': message.sender.name
+                'type': message_type,
+                'sender': '%s' % message.sender
             }).json()
-        elif message.type in ['Picture', 'Video']:
+        elif message_type in ['Picture', 'Video']:
             raw = message.get_file()
             the_id = cutt.upload_raw(raw)
             requests.post('https://tg.appgc.cn/api/tg/save', {
                 'text': the_id,
-                'type': message.type,
-                'sender': message.sender.name
+                'type': message_type,
+                'sender': '%s' % message.sender
             }).json()
         return
 
