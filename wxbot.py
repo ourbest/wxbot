@@ -179,6 +179,11 @@ def is_login():
     return session.get('login')
 
 
+@app.route('/favicon.ico')
+def favicon():
+    return '404', 404
+
+
 @app.teardown_request
 def shutdown_session(f=None):
     db_session.remove()
