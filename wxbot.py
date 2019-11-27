@@ -133,7 +133,7 @@ def post_items():
                 content = requests.get('http://qn.zhiyueapp.cn/%s' % img).content
 
                 path = "data/%s" % img
-                with open(path, "w") as fd:
+                with open(path, "wb") as fd:
                     fd.write(content)
                 for group in groups:
                     grp = bot.groups().search(group)
