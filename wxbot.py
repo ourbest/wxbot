@@ -119,16 +119,17 @@ def post_items():
         return jsonify(code=1, message="没有这个机器人")
 
     items = requests.get('https://tg.appgc.cn/api/jd/wx/items').json()
+    data = items.get('data')
     if items.data:
-        groups = items.data.groups
-        for item in items.data.items:
-            if item.type == 'Text':
+        groups = data['groups']
+        for item in data['items']:
+            if item['type'] == 'Text':
                 for group in groups:
                     grp = bot.groups().search(group)
                     if grp:
-                        grp.send_msg(item.text)
+                        grp.send_msg(item['text'])
             else:
-                img = item.text
+                img = item['text']
                 content = requests.get('http://qn.zhiyueapp.cn/%s' % img).content
 
                 path = "data/%s" % img
