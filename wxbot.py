@@ -6,6 +6,7 @@ import traceback
 import uuid
 from time import strftime
 
+import requests
 from flask import Flask, session, render_template, jsonify, send_file, request
 from werkzeug.exceptions import Unauthorized
 from wxpy import Message
@@ -109,6 +110,36 @@ def get_bot_info():
                    },
                    friends=bot.friends().stats_text(),
                    mps=bot.mps().stats_text())
+
+
+@app.route('/bot/post')
+def post_items():
+    bot = bots.running_bots.get('ourbest')
+    if not bot:
+        return jsonify(code=1, message="没有这个机器人")
+
+    items = requests.get('https://tg.appgc.cn/api/jd/wx/items').json()
+    if items.data:
+        groups = items.data.groups
+        for item in items.data.items:
+            if item.type == 'Text':
+                for group in groups:
+                    grp = bot.groups().search(group)
+                    if grp:
+                        grp.send_msg(item.text)
+            else:
+                img = item.text
+                content = requests.get('http://qn.zhiyueapp.cn/%s' % img).content
+
+                path = "data/%s" % img
+                with open(path, "w") as fd:
+                    fd.write(content)
+                for group in groups:
+                    grp = bot.groups().search(group)
+                    if grp:
+                        grp.send_image(path)
+
+                os.remove(path)
 
 
 @app.route('/bot/qr/status')
