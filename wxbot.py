@@ -126,8 +126,8 @@ def post_items():
             if item['type'] == 'Text':
                 for group in groups:
                     grp = bot.groups().search(group)
-                    if grp:
-                        grp.send_msg(item['text'])
+                    if grp and len(grp):
+                        grp[0].send_msg(item['text'])
             else:
                 img = item['text']
                 content = requests.get('http://qn.zhiyueapp.cn/%s' % img).content
@@ -137,8 +137,8 @@ def post_items():
                     fd.write(content)
                 for group in groups:
                     grp = bot.groups().search(group)
-                    if grp:
-                        grp.send_image(path)
+                    if grp and len(grp):
+                        grp[0].send_image(path)
 
                 os.remove(path)
 
