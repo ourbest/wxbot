@@ -120,7 +120,7 @@ def post_items():
 
     items = requests.get('https://tg.appgc.cn/api/jd/wx/items').json()
     data = items.get('data')
-    if items.data:
+    if data:
         groups = data['groups']
         for item in data['items']:
             if item['type'] == 'Text':
