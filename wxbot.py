@@ -47,7 +47,7 @@ def get_bots():
 
 @app.before_request
 def after_request():
-    if request.path in ('/', '/bot/login', '/favicon.ico') or request.path.find('/dist') == 0:
+    if request.path in ('/', '/bot/login', '/favicon.ico', '/bot/post') or request.path.find('/dist') == 0:
         pass
     elif not is_login():
         raise Unauthorized()
@@ -141,6 +141,8 @@ def post_items():
                         grp.send_image(path)
 
                 os.remove(path)
+
+    return jsonify(code=0)
 
 
 @app.route('/bot/qr/status')
