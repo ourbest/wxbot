@@ -29,6 +29,8 @@ def crawler(message):
                 content = bs_article.find(id='js_content')
 
                 if content:
+                    if 'style' in content.attrs:
+                        del content['style']
                     logger.info('[%s] 文章 %s - %s' % (message.bot.bot_name, message.chat.name, article.title))
                     _save_article(message.bot, message.chat.name, article.title, content, article.url, article.cover)
 
