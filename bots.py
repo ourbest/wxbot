@@ -8,6 +8,7 @@ import time
 from collections import defaultdict
 
 import itchat
+import requests
 from itchat.components.login import push_login
 from pyqrcode import QRCode
 from wxpy import User, Chat, Bot, Messages
@@ -47,6 +48,24 @@ def bot_func(message):
         return
     elif bot.self == message.sender and message.chat in (bot.self, bot.file_helper):
         bot_command_handler(message)
+        return
+    elif '京东菁英站' in '%s' % message.chat:
+        message_type = '%s' % message.type
+        logger.info('Message from %s type %s' % (message.chat, message_type))
+        if message_type == 'Text':
+            logger.info('Request tg return %s' % requests.post('https://tg.appgc.cn/api/tg/save', {
+                'text': message.text,
+                'type': message_type,
+                'sender': '%s' % message.sender.name
+            }).json())
+        elif message_type in ['Picture', 'Video']:
+            raw = message.get_file()
+            the_id = cutt.upload_raw(raw)
+            logger.info('Request tg return %s' % requests.post('https://tg.appgc.cn/api/tg/save', {
+                'text': the_id,
+                'type': message_type,
+                'sender': '%s' % message.sender.name
+            }).json())
         return
 
     articles = message.articles

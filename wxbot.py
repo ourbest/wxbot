@@ -6,6 +6,7 @@ import traceback
 import uuid
 from time import strftime
 
+import requests
 from flask import Flask, session, render_template, jsonify, send_file, request
 from werkzeug.exceptions import Unauthorized
 from wxpy import Message
@@ -46,7 +47,7 @@ def get_bots():
 
 @app.before_request
 def after_request():
-    if request.path in ('/', '/bot/login', '/favicon.ico') or request.path.find('/dist') == 0:
+    if request.path in ('/', '/bot/login', '/favicon.ico', '/bot/post') or request.path.find('/dist') == 0:
         pass
     elif not is_login():
         raise Unauthorized()
@@ -109,6 +110,39 @@ def get_bot_info():
                    },
                    friends=bot.friends().stats_text(),
                    mps=bot.mps().stats_text())
+
+
+@app.route('/bot/post')
+def post_items():
+    bot = bots.running_bots.get('ourbest')
+    if not bot:
+        return jsonify(code=1, message="没有这个机器人")
+
+    items = requests.get('https://tg.appgc.cn/api/jd/wx/items').json()
+    data = items.get('data')
+    if data:
+        groups = data['groups']
+        for item in data['items']:
+            if item['type'] == 'Text':
+                for group in groups:
+                    grp = bot.groups().search(group)
+                    if grp and len(grp):
+                        grp[0].send_msg(item['text'])
+            else:
+                img = item['text']
+                content = requests.get('http://qn.zhiyueapp.cn/%s' % img).content
+
+                path = "data/%s" % img
+                with open(path, "wb") as fd:
+                    fd.write(content)
+                for group in groups:
+                    grp = bot.groups().search(group)
+                    if grp and len(grp):
+                        grp[0].send_image(path)
+
+                os.remove(path)
+
+    return jsonify(code=0)
 
 
 @app.route('/bot/qr/status')
@@ -177,6 +211,11 @@ def get_session_id():
 
 def is_login():
     return session.get('login')
+
+
+@app.route('/favicon.ico')
+def favicon():
+    return '404', 404
 
 
 @app.teardown_request

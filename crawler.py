@@ -23,8 +23,10 @@ def crawler(message):
         if articles:
             for article in articles:
                 if article.url.startswith('https://open.weixin.qq.com/connect/oauth2/authorize'):
+                    logger.info("[%s] ignore %s url %s" % (message.bot.bot_name, message, article.url))
                     continue
-                bs_article = BeautifulSoup(_fetch(article.url), "lxml")
+                article_content = _fetch(article.url)
+                bs_article = BeautifulSoup(article_content, "lxml")
 
                 content = bs_article.find(id='js_content')
 
@@ -39,13 +41,21 @@ def crawler(message):
                     #     cutt.send_dingding_msg('%s推送了一篇文章【%s】%s'
                     #                            % (message.chat.name, articles[0].title, articles[0].url),
                     #                            bot.master_phone)
+                else:
+                    logger.warning(
+                        '[%s] Cannot find js_content and content is %s' % (message.bot.bot_name, article_content))
 
 
 def _fetch(url, text=True):
-    return requests.get(url).text if text else requests.get(url).content
+    val = requests.get(url, proxies={
+        'http': 'http://10.9.131.47:3128',
+        'https': 'http://10.9.131.47:3128'
+    })
+    return val.text if text else val.content
 
 
 def _save_article(bot, user, title, content, url, cover):
+    logger.info('[%s] Save article %s' % (bot.bot_name, title))
     key_prefix = 'mp/%s/%s/%s' % (user, datetime.now().strftime('%y%m%d'), title)
 
     images = content.find_all("img")
@@ -64,20 +74,21 @@ def _save_article(bot, user, title, content, url, cover):
     # uploader.upload_to_qiniu(key_prefix + ".url", url)
     # uploader.upload_to_qiniu(key_prefix + ".cover", _fetch(cover, text=False))
 
-    session = db_session()
-    msg = BotArticle(bot_name=bot.self.name, uid=hashlib.md5(url.encode('utf-8')).hexdigest(),
-                     cover=cutt.upload_image(cover), status=1 if bot.auto_send else 0,
-                     sender=user, title=title, key=key_prefix, created_at=datetime.now())
+    # session = db_session()
+    # msg = BotArticle(bot_name=bot.self.name, uid=hashlib.md5(url.encode('utf-8')).hexdigest(),
+    #                 cover=cutt.upload_image(cover), status=1 if bot.auto_send else 0,
+    #                 sender=user, title=title, key=key_prefix, created_at=datetime.now())
 
-    msg.content = str(content)
-    session.add(msg)
+    # msg.content = str(content)
+    # session.add(msg)
 
-    cutt.notify_internal(user, title, url, msg.content, msg.cover)
+    # cutt.notify_internal(user, title, url, msg.content, msg.cover)
+    cutt.notify_internal(user, title, url, str(content), cutt.upload_image(cover))
 
     # if bot.auto_send:
     #     cutt.post_article(bot.app_id, title, content)
 
-    session.commit()
+    # session.commit()
 
 
 def _test_url(title, url, cover=None):
@@ -87,9 +98,12 @@ def _test_url(title, url, cover=None):
     images = content.find_all("img")
 
     for image in images:
+        style = image['style'] if image.has_attr('style') else ''
         image_url = cutt.upload_image(image['data-src'])
         image.attrs.clear()
         image['src'] = image_url
+        if style:
+            image['style'] = style
 
     cutt.post_draft(title, str(content), cover)
 
