@@ -36,6 +36,8 @@ def bot_command_handler(message):
 def bot_func(message):
     logger.info("[%s] %s " % (message.bot.bot_name, message))
     bot = message.bot
+
+    bot.last_msg = time.time()
     # session = db_session()
     # msg = BotMessage(bot_name=bot.self.name, sender=message.member.name if message.member else message.sender.name,
     #                  chat=message.chat.name, type=message.type, message=message.text,
@@ -208,6 +210,8 @@ class AsyncBot(Bot):
         self.auto_accept = False
         self.notify_dingding = False
         self.master_phone = None
+
+        self.last_msg = time.time()
 
         if PY2:
             from wxpy.compatible.utils import TemporaryDirectory

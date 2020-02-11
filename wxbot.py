@@ -2,6 +2,7 @@ import logging
 import logging.config
 import os
 import sys
+import time
 import traceback
 import uuid
 from time import strftime
@@ -410,6 +411,18 @@ def update_article_content():
             return jsonify(code=0, message='OK')
 
     return '404', 404
+
+
+@app.route('/check')
+def check_bots():
+    for k, bot in bots.running_bots.items():
+        seconds = time.time() - bot.last_msg
+        if seconds > 30 * 60:
+            # 30 分钟没有东西了
+            cutt.send_dingding_msg('%s 有%s分钟没有抓到消息了，可能已经掉线' % (bot.self.name, int(seconds / 60)),
+                                   bot.master_phone)
+
+    return jsonify(code=0, message='ok')
 
 
 def init():
