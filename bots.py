@@ -71,11 +71,15 @@ def bot_func(message):
         return
 
     articles = message.articles
-    if articles and bot.crawler_articles:
-        try:
-            crawler.crawler(message)
-        finally:
-            db_session.remove()
+    if articles:
+        if bot.crawler_articles:
+            try:
+                crawler.crawler(message)
+            finally:
+                db_session.remove()
+        else:
+            for article in articles:
+                logger.info('[%s] %s %s' % (message.sender.name, article.title, article.url))
 
     if message.type == 'Friends' and bot.auto_accept:
         # 好友申请
