@@ -81,6 +81,9 @@ def bot_func(message):
             for article in articles:
                 logger.info('[%s] %s %s' % (message.sender.name, article.title, article.url))
 
+    if message.type == 'Sharing':
+        logger.info('[%s] %s %s' % (message.sender.name, message.text, message.url))
+
     if message.type == 'Friends' and bot.auto_accept:
         # 好友申请
         bot.accept_friend(message.card)
