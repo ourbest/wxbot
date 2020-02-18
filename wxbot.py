@@ -207,7 +207,7 @@ def remove_article():
 def member_count():
     bot = bots.running_bots.get('ourbest')
     if bot:
-        groups__search = bot.groups().search('生活圈京东购物')
+        groups__search = bot.groups().search('生活圈京东')
         return jsonify(result=[{'name': x.name, 'users': len(x)} for x in groups__search])
 
 
