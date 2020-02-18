@@ -202,6 +202,14 @@ def remove_article():
     return jsonify(code=0)
 
 
+@app.route('/bot/members')
+def member_count():
+    bot = bots.running_bots.get('ourbest')
+    if bot:
+        groups__search = bot.groups().search('生活圈京东购物')
+        return jsonify(result=[{'name': x.name, 'users': len(x)} for x in groups__search])
+
+
 def get_session_id():
     sid = session.get('sid')
     if not sid:
