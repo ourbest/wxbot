@@ -315,7 +315,7 @@ class AsyncBot(Bot):
         logger.info("[%s] %s" % (self.bot_name, '退出登录'))
 
         if self.notify_dingding:
-            cutt.send_dingding_msg('机器人 %s 下线了' % self.self.name, self.master_phone)
+            cutt.send_dingding_msg('机器人 %s 下线了，扫码登录：http://wxbot.appgc.cn/bot/qr' % self.self.name, self.master_phone)
 
         if master_bot:
             if self == master_bot:
