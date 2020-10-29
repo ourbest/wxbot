@@ -74,6 +74,15 @@ def exceptions(e):
     return "Internal Server Error", 500
 
 
+@app.route('/bot/dd')
+def get_dd():
+    """
+    钉钉
+    :return:
+    """
+    return render_template("dt.html")
+
+
 @app.route('/bot/qr')
 def get_qr():
     bot = bots.anonymous_bots[get_session_id()]

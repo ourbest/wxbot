@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>登录</title>
+</head>
+<body>
+<div style="text-align: center">
+    <img src="/bot/qr"/>
+    <div id="message">扫描二维码</div>
+</div>
+<script>
+    function checkStatus() {
+        fetch('/bot/qr/status')
+            .then(function (resp) {
+                return resp.json();
+            })
+            .then(function (json) {
+                document.getElementById('message').innerText = json.message;
+
+                if (json.code !== 200 && json.code !== 408) {
+                    setTimeout(checkStatus, 500);
+                }
+            });
+    }
+
+    setTimeout(checkStatus, 500);
+
+</script>
+</body>
+</html>
