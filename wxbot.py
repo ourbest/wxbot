@@ -50,6 +50,7 @@ def get_bots():
 def after_request():
     if request.path in ('/', '/bot/login', '/favicon.ico',
                         '/bot/post', '/check', '/bot/members',
+                        '/bot/qr/status', '/bot/dd',
                         '/bot/qr') or request.path.find('/dist') == 0:
         pass
     elif not is_login():
