@@ -45,6 +45,13 @@ def bot_func(message):
     # session.add(msg)
     # session.commit()
 
+    message_type = '%s' % message.type
+    if message_type == 'Note':
+        requests.post('http://10.9.21.184/api/mp/addGroup', {
+            'group': '%s' % message.chat,
+            'text': message.text
+        }).close()
+
     if bot.master:
         bot_master_handler(message)
         return
@@ -52,7 +59,6 @@ def bot_func(message):
         bot_command_handler(message)
         return
     elif '京东菁英站' in '%s' % message.chat:
-        message_type = '%s' % message.type
         logger.info('Message from %s type %s' % (message.chat, message_type))
         if message_type == 'Text':
             logger.info('Request tg return %s' % requests.post('https://tg.appgc.cn/api/tg/save', {
