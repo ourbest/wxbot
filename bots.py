@@ -99,8 +99,8 @@ def bot_func(message):
     if isinstance(message.chat, Group):
         requests.post('http://10.9.21.184/api/mp/addMessage', {
             'group': '%s' % message.chat.name,
-            'from': '%s' % message.sender.name,
-            'text': message.text
+            'from': '%s' % message.member.name,
+            'text': '%s: %s' % (message.type, message.text)
         }).close()
 
 
