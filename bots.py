@@ -11,7 +11,7 @@ import itchat
 import requests
 from itchat.components.login import push_login
 from pyqrcode import QRCode
-from wxpy import User, Chat, Bot, Messages
+from wxpy import User, Chat, Bot, Messages, Group
 from wxpy.api.messages import Registered, MessageConfig
 from wxpy.compatible import PY2
 from wxpy.utils import enhance_webwx_request, wrap_user_name, enhance_connection
@@ -48,7 +48,7 @@ def bot_func(message):
     message_type = '%s' % message.type
     if message_type == 'Note':
         requests.post('http://10.9.21.184/api/mp/addGroup', {
-            'group': '%s' % message.chat,
+            'group': '%s' % message.chat.name,
             'text': message.text
         }).close()
 
@@ -95,6 +95,13 @@ def bot_func(message):
         bot.accept_friend(message.card)
         if bot.notify_dingding:
             cutt.send_dingding_msg('%s 自动接受了好友请求 %s' % (bot.self.name, message.card.name), bot.master_phone)
+
+    if isinstance(message.chat, Group):
+        requests.post('http://10.9.21.184/api/mp/addMessage', {
+            'group': '%s' % message.chat.name,
+            'from': '%s' % message.sender.name,
+            'text': message.text
+        }).close()
 
 
 def bot_master_handler(message):
