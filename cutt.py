@@ -6,7 +6,7 @@ import requests
 import settings
 from settings import logger
 
-CUTT_HOST = 'http://cms.appgc.cn'
+CUTT_HOST = 'http://cms.jwshq.cn'
 
 session = requests.session()
 session.has_logged = False
@@ -29,7 +29,7 @@ def upload_image(url):
     if not resp.get('data'):
         raw = requests.get(url).content
         resp = session.post(CUTT_HOST + '/image/getImage.json', {'url': to_data_url(raw)}).json()
-    return ('http://qn.zhiyueapp.cn/%s/2' % resp.get('data')) if resp.get('code') == 0 and resp.get('data') else url
+    return ('http://qn.jwshq.cn/%s/2' % resp.get('data')) if resp.get('code') == 0 and resp.get('data') else url
 
 
 def upload_raw(data):

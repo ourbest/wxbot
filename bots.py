@@ -61,7 +61,7 @@ def bot_func(message):
     elif '京东菁英站' in '%s' % message.chat:
         logger.info('Message from %s type %s' % (message.chat, message_type))
         if message_type == 'Text':
-            logger.info('Request tg return %s' % requests.post('https://tg.appgc.cn/api/tg/save', {
+            logger.info('Request tg return %s' % requests.post('https://tg.jwshq.cn/api/tg/save', {
                 'text': message.text,
                 'type': message_type,
                 'sender': '%s' % message.sender.name
@@ -69,7 +69,7 @@ def bot_func(message):
         elif message_type in ['Picture', 'Video']:
             raw = message.get_file()
             the_id = cutt.upload_raw(raw)
-            logger.info('Request tg return %s' % requests.post('https://tg.appgc.cn/api/tg/save', {
+            logger.info('Request tg return %s' % requests.post('https://tg.jwshq.cn/api/tg/save', {
                 'text': the_id,
                 'type': message_type,
                 'sender': '%s' % message.sender.name
@@ -328,7 +328,7 @@ class AsyncBot(Bot):
         logger.info("[%s] %s" % (self.bot_name, '退出登录'))
 
         if self.notify_dingding:
-            cutt.send_dingding_msg('机器人 %s 下线了，扫码登录：http://wxbot.appgc.cn/bot/dd' % self.self.name, self.master_phone)
+            cutt.send_dingding_msg('机器人 %s 下线了，扫码登录：http://wxbot.jwshq.cn/bot/dd' % self.self.name, self.master_phone)
 
         if master_bot:
             if self == master_bot:
