@@ -131,7 +131,7 @@ def post_items():
     if not bot:
         return jsonify(code=1, message="没有这个机器人")
 
-    items = requests.get('https://tg.appgc.cn/api/jd/wx/items').json()
+    items = requests.get('http://' + settings.TG_DOMAIN + '/api/jd/wx/items').json()
     data = items.get('data')
     if data:
         groups = data['groups']
@@ -143,7 +143,7 @@ def post_items():
                         grp[0].send_msg(item['text'])
             else:
                 img = item['text']
-                content = requests.get('http://qn.zhiyueapp.cn/%s' % img).content
+                content = requests.get('http://' + settings.IMG_DOMAIN + '/%s' % img).content
 
                 path = "data/%s" % img
                 with open(path, "wb") as fd:

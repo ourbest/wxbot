@@ -18,6 +18,7 @@ from wxpy.utils import enhance_webwx_request, wrap_user_name, enhance_connection
 
 import crawler
 import cutt
+import settings
 from models import db_session
 from settings import logger
 
@@ -61,7 +62,7 @@ def bot_func(message):
     elif '京东菁英站' in '%s' % message.chat:
         logger.info('Message from %s type %s' % (message.chat, message_type))
         if message_type == 'Text':
-            logger.info('Request tg return %s' % requests.post('https://tg.jwshq.cn/api/tg/save', {
+            logger.info('Request tg return %s' % requests.post('https://' + settings.TG_DOMAIN + '/api/tg/save', {
                 'text': message.text,
                 'type': message_type,
                 'sender': '%s' % message.sender.name
@@ -69,7 +70,7 @@ def bot_func(message):
         elif message_type in ['Picture', 'Video']:
             raw = message.get_file()
             the_id = cutt.upload_raw(raw)
-            logger.info('Request tg return %s' % requests.post('https://tg.jwshq.cn/api/tg/save', {
+            logger.info('Request tg return %s' % requests.post('https://' + settings.TG_DOMAIN + '/api/tg/save', {
                 'text': the_id,
                 'type': message_type,
                 'sender': '%s' % message.sender.name
