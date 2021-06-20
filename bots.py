@@ -80,12 +80,15 @@ def bot_func(message):
             }).json())
         return
     elif message_type == 'Text' and message.member:
-        logger.info('Request tg return %s' % requests.post('https://' + settings.TG_DOMAIN + '/api/tg/save', {
+        data = {
             'text': message.text,
             'type': message_type,
             'sender': '%s' % message.member.name,
             'chat': '%s' % message.chat.name
-        }).json())
+        }
+        logger.info('Request tg %s return %s' % (data,
+                                                 requests.post('https://' + settings.TG_DOMAIN + '/api/tg/save',
+                                                               data).json()))
 
     articles = message.articles
     if articles:
