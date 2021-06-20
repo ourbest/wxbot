@@ -47,6 +47,9 @@ def bot_func(message):
     # session.commit()
 
     message_type = '%s' % message.type
+
+    logger.info('[%s][%s][%s][%s] %s' % (message_type, message.chat.name, message.member, message.chat, message.text))
+
     if message_type == 'Note':
         requests.post('http://10.9.21.184/api/mp/addGroup', {
             'group': '%s' % message.chat.name,
