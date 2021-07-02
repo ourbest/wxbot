@@ -21,6 +21,7 @@ from models import db_session
 from settings import logger
 
 
+#main bot command
 def bot_command_handler(message):
     if message.text.startswith('🤖️'):
         return
