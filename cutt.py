@@ -15,7 +15,7 @@ session.has_logged = False
 
 def login_cutt():
     resp = session.post(CUTT_HOST + '/j_security_check.json',
-                        {'j_username': 'monotonic.chs@qq.com', 'j_password': 'fMs3DteCSa', 'type': 'CMS'}).json()
+                        {'j_username': 'monotonic.chs@qq.com', 'j_password': 'x', 'type': 'CMS'}).json()
 
     if resp.get('result') == 0:
         session.has_logged = True
