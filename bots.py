@@ -79,9 +79,13 @@ def bot_func(message):
                 'sender': '%s' % message.sender.name
             }).json())
         return
-    elif message_type == 'Text' and message.member:
+    elif message.member:
+        text = message.text
+        if message_type in ['Picture', 'Video']:
+            raw = message.get_file()
+            text = cutt.upload_raw(raw)
         data = {
-            'text': message.text,
+            'text': text,
             'type': message_type,
             'sender': '%s' % message.member.name,
             'chat': '%s' % message.chat.name
