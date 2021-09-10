@@ -93,6 +93,9 @@ def bot_func(message):
         logger.info('Request tg %s return %s' % (data,
                                                  requests.post('https://' + settings.TG_DOMAIN + '/api/tg/save',
                                                                data).json()))
+        logger.info('Request ww %s return %s' % (data,
+                                                 requests.post('https://' + settings.WW_DOMAIN + '/ww/group/recv',
+                                                               json=data).json()))
 
     articles = message.articles
     if articles:

@@ -9,6 +9,7 @@ DINGDING_TOKEN = 'd3f5c74d4dea6d2bd4836a97c45110770d1fc48addefb519e31dbeaf1f7407
 PWD = 'woshijianwangyuangong'
 IMG_DOMAIN = 'qn.jwshq.cn'
 TG_DOMAIN = 'tg.jwshq.cn'
+WW_DOMAIN = 'wework.jwshq.cn'
 
 
 def load_settings():
